@@ -1,0 +1,23 @@
+{
+	"inputScriptURL": "https://www.creationkit.com/index.php?title=Input_Script#DXScanCodes",
+	"upKey": 266,
+	"downKey": 267,
+	"leftKey": 268,
+	"rightKey": 269,
+	"useKey": 278,
+	"disableControls": false,
+	
+	"editModeHoldTime": 0.3,
+	"quickItemResetHoldTime": 0.5,
+	"pouchAccessHoldTime": 0.3,
+	"uiInitTime": 2,
+	
+	"uiVisible": true,
+	"uiDynamicVisibility": true,
+	"uiGoldWidgetVisibility": true,
+	"uiOpacityTransitions": true,
+	"uiFlashFeedback": true,
+	
+	"printCycles": false,
+	"uninstallMod": false
+}
