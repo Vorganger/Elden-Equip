@@ -1,4 +1,4 @@
-import { Actor, FormType, Game, on, once } from "@skyrim-platform/skyrim-platform";
+import { Actor, Form, FormType, Game, on, once } from "@skyrim-platform/skyrim-platform";
 import { solveForm } from "@skyrim-platform/jcontainers/JDB";
 import * as fun from "./index_fun";
 import * as consts from "./constants";
@@ -69,7 +69,8 @@ on("equip", (event) => {
     if (!fun.isInit || event.actor.getFormID() !== consts.PLAYER_ID)
         return;
     let player = Actor.from(event.actor);
-    let equipped = event.baseObj;
+    if (!equipped)
+        return;
     // Right hand
     if (equipped !== solveForm(consts.RIGHTHAND_RECENT) &&
         equipped === player?.getEquippedObject(1)) {
@@ -102,7 +103,9 @@ on("equip", (event) => {
 on("unequip", (event) => {  
     if (!fun.isInit || event.actor.getFormID() !== consts.PLAYER_ID)
         return;
-    let unequipped = event.baseObj;
+    let unequipped = Form.from(event.baseObj);
+    if (!unequipped)
+        return;
     let player = Actor.from(event.actor);
     // Right hand
     if (solveForm(consts.RIGHTHAND_RECENT) && !player?.getEquippedObject(1)) {
