@@ -140,10 +140,13 @@ on("buttonEvent", (event) => {
             fun.upKeyEvent(event.device, event.isDown);
             return;
         case settings.downKey.code:
-            fun.downKeyEvent(event.device, event.isDown, event.isHeld, event.heldDuration);
+            fun.downKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;
-        case settings.useKey.code:
-            fun.useKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
+        case settings.itemUseKey.code:
+            fun.itemUseKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
+            return;
+        case settings.editModeKey.code:
+            fun.editModeKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;
         case fun.activateKeyKeyboard.code:
             fun.activateKeyEvent(event.isDown, event.isUp, event.isHeld, event.heldDuration);

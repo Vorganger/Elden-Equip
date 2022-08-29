@@ -88,7 +88,8 @@ export function initBrowser() {
 
 export function initWidgets() {
     let player = Game.getPlayer();
-    widget.scaleUI();
+    widget.initWidgetPosition();
+    widget.initWidgetScale();
     // Cycles
     widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
         Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
@@ -110,6 +111,11 @@ export function initWidgets() {
     // UI visibility
     if (menuClosed)
         widget.changeOpacity("ui", 0, 0, 1);
+    // Hand name visibility
+    widget.changeVisibility("left-hand-name", settings.uiHandNameVisibility);
+    widget.changeVisibility("right-hand-name", settings.uiHandNameVisibility);
+    widget.changeVisibility("ammo-name", settings.uiHandNameVisibility);
+    // Dynamic UI visibility
     if (settings.uiDynamicVisibility) {
         widget.changeOpacity("equipment", 0, 0, 0);
         widget.changeOpacity("player-gold", 0, 0, 0);
@@ -173,7 +179,8 @@ export async function initialize() {
 // After initialization
 // --------------------
 
-// Menu states
+// Control/menu states
+export let downKeyHold = { isActionCompleted: false }; // prevents the same action from being run again
 export let pouch = { isOpen: false };
 export let editMode = { isLoading: false, isLoadingComplete: false, isOpen: false };
 
@@ -307,7 +314,7 @@ export function updateGoldCount(player: Actor | null) {
 }
 
 export function updateLHNameVisibility() {
-    if (!leftHandNameVisible.isEnabled)
+    if (!leftHandNameVisible.isEnabled || !settings.uiHandNameVisibility)
         return;
     if (leftHandNameVisible.startTime === -1) {
         widget.changeOpacity("left-hand-name", 0.2, 0, 1);
@@ -321,7 +328,7 @@ export function updateLHNameVisibility() {
     }
 }
 export function updateRHNameVisibility() {
-    if (!rightHandNameVisible.isEnabled)
+    if (!rightHandNameVisible.isEnabled || !settings.uiHandNameVisibility)
         return;
     if (rightHandNameVisible.startTime === -1) {
         widget.changeOpacity("right-hand-name", 0.2, 0, 1);
@@ -344,6 +351,8 @@ export function updateAmmoNameVisibility() {
     if (!ammoNameVisible.isEnabled)
         return;
     if (ammoNameVisible.startTime === -1) {
+        if (!settings.uiHandNameVisibility)
+            return;
         widget.changeOpacity("ammo-name", 0.2, 0, 1);
         widget.changeOpacity("ammo", 0.2, 0, 0.5);
         ammoNameVisible.startTime = currentTime;
@@ -498,7 +507,8 @@ export function rightHandEquipEvent(currentRH: Form) {
 
     // Updates visibility. Requires bow equipped.
     if (playerHoldingBow) {
-        widget.changeOpacity("ammo", 0, 0, 0.5); // always sets to half opacity
+        if (settings.uiHandNameVisibility)
+            widget.changeOpacity("ammo", 0, 0, 0.5); // always sets to half opacity
         widget.setAmmoWidgetVisibility(true);
         startTimer(ammoNameVisible);
         return;
@@ -535,7 +545,8 @@ export function voiceEquipEvent(currentVoice: Form) {
 }
 
 export function ammoEquipEvent(equipped: Form) {
-    widget.changeOpacity("ammo", 0, 0, 0.5); // always sets to half opacity
+    if (settings.uiHandNameVisibility)
+        widget.changeOpacity("ammo", 0, 0, 0.5); // always sets to half opacity
     if (equipped === solveForm(consts.AMMO_RECENT))
         return;
     // Updates variables and cycle
@@ -736,7 +747,33 @@ export function upKeyEvent(device: number, isDown: boolean) {
     voiceCycle.advance();
 }
 
-export function downKeyEvent(device: number, isDown: boolean, isHeld: boolean, heldDuration: number) {
+// To save some lines of code here.
+function advanceQuickItemCycle() {
+    if (editMode.isOpen) {
+        quickItemCycle.remove();
+        widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
+            Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
+            Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+        return;
+    }
+    if (pouch.isOpen) {
+        downPouch.use();
+        return;
+    }
+    if (settings.uiDynamicVisibility) {
+        let prevVisible = equipmentVisible.isEnabled;
+        startTimer(equipmentVisible);
+        if (!prevVisible)
+            return;
+    }
+    widget.flashAnim(1);
+    quickItemCycle.advance();
+    widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
+        Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
+        Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+}
+
+export function downKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
     if (device !== settings.downKey.device)
         return;
     if (editMode.isLoading || editMode.isLoadingComplete)
@@ -744,41 +781,51 @@ export function downKeyEvent(device: number, isDown: boolean, isHeld: boolean, h
     if (!menuClosed || Ui.isMenuOpen("LootMenu"))
         return;
     if (isDown) {
-        if (editMode.isOpen) {
-            quickItemCycle.remove();
-            widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
-                Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
-                Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+        if (settings.useQuickItemByHoldingDown)
+            return;
+        advanceQuickItemCycle();
+        return;
+    }
+    if (isUp) {
+        if (downKeyHold.isActionCompleted) {
+            downKeyHold.isActionCompleted = false;
             return;
         }
-        if (pouch.isOpen) {
-            downPouch.use();
+        if (!settings.useQuickItemByHoldingDown)
             return;
-        }
-        if (settings.uiDynamicVisibility) {
-            let prevVisible = equipmentVisible.isEnabled;
-            startTimer(equipmentVisible);
-            if (!prevVisible)
-                return;
-        }
-        widget.flashAnim(1);
-        quickItemCycle.advance();
-        widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
-            Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
-            Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+        advanceQuickItemCycle();
         return;
     }
     if (isHeld) {
-        if (heldDuration < settings.quickItemResetHoldTime - 0.1 ||
-            heldDuration > settings.quickItemResetHoldTime + 0.1 ||
-            Ui.isMenuOpen("LootMenu"))
+        if (heldDuration < settings.downKeyHoldTime - 0.1 ||
+            heldDuration > settings.downKeyHoldTime + 0.1 ||
+            Ui.isMenuOpen("LootMenu")) {
+                return;
+        }
+        // Prevents the desired action from being run again.
+        if (downKeyHold.isActionCompleted) {
             return;
-        if (settings.uiDynamicVisibility)
+        }
+        if (editMode.isLoading || editMode.isLoadingComplete ||
+            editMode.isOpen || pouch.isOpen) {
+                return;
+        }
+        if (settings.uiDynamicVisibility && !pouch.isOpen)
             startTimer(equipmentVisible);
-        if (!quickItemCycle.resetIndex())
-            return;
-        widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()), Game.getFormEx(quickItemCycle.getItemIdOffset(1)), Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
-        widget.flashRedAnim();
+        // Quick item use.
+        if (settings.useQuickItemByHoldingDown) {
+            quickItemCycle.use();
+        }
+        // Quick item index reset.
+        else {
+            if (!quickItemCycle.resetIndex())
+                return;
+            widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
+                Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
+                Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+            widget.flashRedAnim();
+        }
+        downKeyHold.isActionCompleted = true;
     }
 }
 
@@ -856,10 +903,13 @@ export function closeEditMode() {
         startTimer(equipmentVisible);
 }
 
-export function useKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
-    if (device !== settings.useKey.device)
+// Includes edit mode key by if the separateEditKey setting is set to false.
+// Makes it easier for gamepad users to not switch back and forth between
+// either gamepad or keyboard and mouse.
+export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
+    if (device !== settings.itemUseKey.device)
         return;
-    if (!menuClosed || Ui.isMenuOpen("LootMenu"))
+    if (settings.useQuickItemByHoldingDown || !menuClosed || Ui.isMenuOpen("LootMenu"))
         return;
     if (isDown) {
         if (editMode.isLoading || editMode.isLoadingComplete || editMode.isOpen)
@@ -900,7 +950,54 @@ export function useKeyEvent(device: number, isDown: boolean, isUp: boolean, isHe
     }
     if (isHeld) {
         // Load edit mode
-        if (heldDuration < settings.editModeHoldTime || pouch.isOpen || editMode.isOpen)
+        if (settings.separateEditKey || heldDuration < settings.editModeHoldTime || pouch.isOpen || editMode.isOpen)
+            return;
+        openEditMode();
+        return;
+    }
+}
+
+// Note: using a bunch of the same code from the itemUseEvent() function
+// only to enter and exit edit mode.
+// Can only be used if the separateEditKey is set to true.
+export function editModeKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
+    if (device !== settings.editModeKey.device)
+        return;
+    if (!menuClosed || Ui.isMenuOpen("LootMenu"))
+        return;
+    if (isDown) {
+        if (editMode.isLoading || editMode.isLoadingComplete || editMode.isOpen)
+            return;
+        if (!settings.uiDynamicVisibility)
+            return;
+        startTimer(equipmentVisible);
+        return;
+    }
+    if (isUp) {
+        if (pouch.isOpen)
+            return;
+        // Cancel edit mode load
+        if (editMode.isLoading && !editMode.isOpen) {
+            editMode.isLoading = false;
+            if (settings.uiDynamicVisibility)
+                startTimer(equipmentVisible);
+            return;
+        }
+        // Initial key release after loading edit mode
+        if (!editMode.isOpen && editMode.isLoadingComplete) {
+            editMode.isLoadingComplete = false;
+            editMode.isOpen = true;
+            return;
+        }
+        if (editMode.isOpen && !editMode.isLoadingComplete) {
+            closeEditMode();
+            return;
+        }
+        return;
+    }
+    if (isHeld) {
+        // Load edit mode
+        if (!settings.separateEditKey || heldDuration < settings.editModeHoldTime || pouch.isOpen || editMode.isOpen)
             return;
         openEditMode();
         return;

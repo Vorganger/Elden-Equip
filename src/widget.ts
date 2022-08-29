@@ -1,6 +1,6 @@
 import { Ammo, Armor, browser, Game, Form, FormType, MagicEffect, Potion, SlotMask, Spell, Ui, Utility, Weapon, WeaponType } from "@skyrim-platform/skyrim-platform";
 import { solveForm } from "@skyrim-platform/jcontainers/JDB";
-import { uiFlashFeedback, uiGoldWidgetVisibility, uiOpacityTransitions, uiVisible } from "./settings";
+import * as settings from "./settings";
 import * as utils from "./utilities";
 import * as consts from "./constants";
 
@@ -13,11 +13,23 @@ export function isMenuClosed(): boolean {
 // ---------------------------------------
 
 export function changeOpacity(element: string, time: number, delay: number, opacity: number) {
-    if (!uiOpacityTransitions)
+    if (!settings.uiOpacityTransitions)
         time = 0;
     browser.executeJavaScript(`document.getElementById("${element}").style.transition = "opacity ${time}s";`);
     browser.executeJavaScript(`document.getElementById("${element}").style.transitionDelay = "${delay}s";`);
     browser.executeJavaScript(`document.getElementById("${element}").style.opacity = "${opacity}";`);
+}
+export function changeScale(element: string, scale: number) {
+    browser.executeJavaScript(`document.getElementById("${element}").style.transform = "scale(${scale})";`);
+}
+export function changeLeft(element: string, viewportWidth: number) {
+    browser.executeJavaScript(`document.getElementById("${element}").style.left = "${viewportWidth}vw";`);
+}
+export function changeRight(element: string, viewportWidth: number) {
+    browser.executeJavaScript(`document.getElementById("${element}").style.right = "${viewportWidth}vw";`);
+}
+export function changeBottom(element: string, viewportHeight: number) {
+    browser.executeJavaScript(`document.getElementById("${element}").style.bottom = "${viewportHeight}vh";`);
 }
 export function changeSource(element: string, source: string) {
     browser.executeJavaScript(`document.getElementById("${element}").src = "${source}";`);
@@ -53,10 +65,22 @@ export function fadeInOut(element: string, time: number, steps: number) {
     browser.executeJavaScript(`document.getElementById("${element}").style.animation = "fade-in-out ${time}s steps(${steps})";`);
 }
 
-export function scaleUI() {
-    // Base resolution: 1920 x 1080
-    browser.executeJavaScript(`document.getElementById("bottom-left").style.transform = "scale(" + Math.min((window.screen.width / 1920), (window.screen.height / 1080)) + ")";`)
-    browser.executeJavaScript(`document.getElementById("bottom-right").style.transform = "scale(" + Math.min((window.screen.width / 1920), (window.screen.height / 1080)) + ")";`)
+// Sets the position based on screen's width and height percentage
+export function initWidgetPosition() {
+    changeLeft("equipment", settings.uiEquipmentPosition_X);
+    changeBottom("equipment", settings.uiEquipmentPosition_Y);
+
+    changeLeft("pouch", settings.uiEquipmentPosition_X);
+    changeBottom("pouch", settings.uiEquipmentPosition_Y);
+
+    changeRight("player-gold", settings.uiGoldPosition_X);
+    changeBottom("player-gold", settings.uiGoldPosition_Y);
+}
+
+export function initWidgetScale() {
+    changeScale("equipment", settings.uiEquipmentScaleMult);
+    changeScale("pouch", settings.uiEquipmentScaleMult);
+    changeScale("player-gold", settings.uiGoldScaleMult);
 }
 
 // --------------------
@@ -314,7 +338,7 @@ function updateIconPotion(item: Form, iconElement: string) {
 }
 
 function updateIcon(item: Form | null, iconElement: string) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
     // Resets secondary icon
     changeSource(`${iconElement}-secondary`, "");
@@ -357,7 +381,7 @@ function updateIconOpacity(item: Form | null, iconElement: string) {
 }
 
 export function updateItemCount(countElement: string, iconElement: string, item: Form | null) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
     updateIconOpacity(item, iconElement);
     let itemType = item?.getType();
@@ -389,7 +413,7 @@ function updateLeftHandIconOpacity(currentRH: Form | null) {
 
 // Updates icon and name of specified slot, given a Form object (i.e. equipped item)
 export function updateEquippedItemWidget(slot: number, item: Form | null) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
     let elementPrefix: string;
     switch (slot) {
@@ -412,7 +436,7 @@ export function updateEquippedItemWidget(slot: number, item: Form | null) {
 
 // Updates icon and name of the quick item widget, given Form objects (i.e. quick items)
 export function updateQuickItemWidget(item: Form | null, firstNextItem: Form | null, secondNextItem: Form | null) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
     let itemName = item?.getName() ?? "";
     changeTextContent("quick-item-name", itemName);
@@ -437,7 +461,7 @@ export function updateQuickItemWidget(item: Form | null, firstNextItem: Form | n
 
 // Updates icons and names of all elements in the pouch widget, given an index
 export function updatePouchWidget(item: Form | null, pouchIndex: number) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
     let elementPrefix = "";
     switch (pouchIndex) {
@@ -483,9 +507,9 @@ export async function updateAmmoWidget() {
 }
 
 export function flashAnim(element: number) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
-    if (!uiFlashFeedback)
+    if (!settings.uiFlashFeedback)
         return;
     let id = "";
     if (element === 0)
@@ -500,15 +524,15 @@ export function flashAnim(element: number) {
 }
 
 export function flashRedAnim() {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
-    if (!uiFlashFeedback)
+    if (!settings.uiFlashFeedback)
         return;
-    fadeOut("quick-item-flash-red", 0.2, 4);
+    fadeOut("quick-item-flash-red", 0.6, 12);
 }
 
 export function shoutFlashAnim(maxShoutTime: number) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
     fadeIn("voice-icon", maxShoutTime, maxShoutTime * 4);
     fadeOut("voice-flash", 0.2, 4);
@@ -516,13 +540,13 @@ export function shoutFlashAnim(maxShoutTime: number) {
 }
 
 export function shoutRechargedFlashAnim() {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
     fadeOut("voice-flash-alt", 0.2*2, 4*2);
 }
 
 export function updateGoldCount(goldCount: number) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
     changeTextContent("player-gold-count", goldCount.toString());
 }
@@ -533,9 +557,9 @@ export function updateGoldCount(goldCount: number) {
 // Plays a count animation of added/removed gold.
 // ----------------------------------------------
 export async function goldCountAnimation(goldDelta: number) {
-    if (!uiVisible)
+    if (!settings.uiVisible)
         return;
-    if (!uiGoldWidgetVisibility)
+    if (!settings.uiGoldWidgetVisibility)
         return;
     if (goldDelta === 0)
         return;

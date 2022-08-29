@@ -3,24 +3,24 @@
 	<script src="../Plugins/elden-equip.js"></script>
 	<style>
 		@keyframes full-half-full-opacity {
-			0% {opacity: 1.0;}
+			0% {opacity: 1;}
 			5% {opacity: 0.5;}
 			90% {opacity: 0.5;}
-			100% {opacity: 1.0;}
+			100% {opacity: 1;}
 		}
 		@keyframes fade-in {
-			0% {opacity: 0.0;}
-			100% {opacity: 1.0;}
+			0% {opacity: 0;}
+			100% {opacity: 1;}
 		}
 		@keyframes fade-out {
-			0% {opacity: 1.0;}
-			100% {opacity: 0.0;}
+			0% {opacity: 1;}
+			100% {opacity: 0;}
 		}
 		@keyframes fade-in-out {
-			0% {opacity: 0.0;}
-			5% {opacity: 1.0;}
-			90% {opacity: 1.0;}
-			100% {opacity: 0.0;}
+			0% {opacity: 0;}
+			5% {opacity: 1;}
+			90% {opacity: 1;}
+			100% {opacity: 0;}
 		}
 		@font-face {
 			font-family: FuturaBook;
@@ -33,18 +33,8 @@
 			text-shadow: 1px 1px 1.5px black;
 			white-space: nowrap;
 		}
-		#ui {
-			opacity: 0.0;
-			top: 0px;
-			position: relative;
-		}
-		#bottom-left {
-			transform-origin: left;
-			transform: scale(0);
-		}
-		#bottom-right {
-			transform-origin: bottom right;
-			transform: scale(0);
+		body {
+			overflow: hidden;
 		}
 		.icon {
 			position: absolute;
@@ -75,8 +65,8 @@
 		}
 		.left {
 			position: absolute;
-			top: 850px;
-			left: 30px;
+			top: 52px;
+			left: 0px;
 		}
 		.left-name {
 			position: absolute;
@@ -88,8 +78,8 @@
 		}
 		.right {
 			position: absolute;
-			top: 850px;
-			left: 194px;
+			top: 52px;
+			left: 164px;
 		}
 		.right-name {
 			position: absolute;
@@ -99,8 +89,8 @@
 		}
 		.up {
 			position: absolute;
-			top: 798px;
-			left: 112px;
+			top: 0px;
+			left: 82px;
 		}
 		.up-name {
 			position: absolute;
@@ -110,8 +100,8 @@
 		}
 		.down {
 			position: absolute;
-			top: 902px;
-			left: 112px;
+			top: 104px;
+			left: 82px;
 		}
 		.down-name {
 			position: absolute;
@@ -119,11 +109,26 @@
 			top: 91px;
 			left: 0px;
 		}
+		#ui {
+			opacity: 0;
+			position: relative;
+			width: 100%;
+			height: 100%;
+		}
 		#equipment {
-			opacity: 0.0;
+			/* Equipment dimensions based on total frame area */
+			width: 239px;
+			height: 204px;
+			left: 0vw;
+			bottom: 0vh;
+			position: absolute;
+			transform-origin: bottom left;
+			transform: scale(0);
+			opacity: 0;
+			visibility: visible;
 		}
 		.flash {
-			opacity: 0.0;
+			opacity: 0;
 			position: absolute;
 			left: 0px;
 			top: 0px;
@@ -131,10 +136,10 @@
 			bottom: 0px;
 		}
 		#left-hand-name {
-			opacity: 0.0;
+			opacity: 0;
 		}
 		#right-hand-name {
-			opacity: 0.0;
+			opacity: 0;
 		}
 		#quick-item-offset-2 {
 			position: absolute;
@@ -163,7 +168,7 @@
 			transform: scale(2);
 		}
 		#ammo-name {
-			opacity: 0.0;
+			opacity: 0;
 			position: absolute;
 			text-align: right;
 			top: 91px;
@@ -172,14 +177,27 @@
 			width: 145%;
 		}
 		#pouch {
-			opacity: 0.0;
+			/* Equipment dimensions based on total frame area */
+			width: 239px;
+			height: 204px;
+			left: 0vw;
+			bottom: 0vh;
+			position: absolute;
+			transform-origin: bottom left;
+			transform: scale(0);
+			opacity: 0;
+			visibility: visible;
 		}
 		#player-gold {
-			opacity: 0.0;
-			visibility: visible;
+			width: 150px;
+			height: 24px;
+			right: 0vw;
+			bottom: 0vh;
 			position: absolute;
-			right: 30px;
-			top: 1000px;
+			transform-origin: bottom right;
+			transform: scale(0);
+			visibility: visible;
+			opacity: 0;
 		}
 		#player-gold-count {
 			position: absolute;
@@ -191,103 +209,99 @@
 			font-size: 20px;
 		}
 		#player-gold-delta {
-			opacity: 0.0;
 			position: absolute;
 			right: 2px;
 			bottom: 30px;
 			margin: auto;
 			text-align: right;
 			font-size: 20px;
+			opacity: 0;
 		}
 	</style>
 </head>
 <body>
 	<div id="ui">
-		<div id="bottom-left">
-			<div id="equipment">
-				<div id="voice" class="up">
-					<img id="voice-frame" class="frame" src="images/frame_equipment_pouch.svg">
-					<img id="voice-flash" class="flash"  src="images/flash.svg">
-					<img id="voice-flash-alt" class="flash"  src="images/flash_alt.svg">
-					<img id="voice-icon" class="icon">
-					<img id="voice-icon-secondary" class="icon-secondary">
-					<p id="voice-name" class="up-name">
-				</div>
-				<div id="quick-item" class="down">
-					<img id="quick-item-frame" class="frame" src="images/frame_equipment_pouch.svg">
-					<img id="quick-item-flash" class="flash" src="images/flash.svg">
-					<img id="quick-item-flash-red" class="flash" src="images/flash_red.svg">
-					<img id="quick-item-icon" class="icon">
-					<img id="quick-item-icon-secondary" class="icon-secondary">
-					<div id="quick-item-offset-2">
-						<img id="quick-item-offset-2-frame" src="images/frame_equipment_pouch.svg">
-						<img id="quick-item-offset-2-icon" class="icon">
-					</div>
-					<div id="quick-item-offset-1">
-						<img id="quick-item-offset-1-frame" src="images/frame_equipment_pouch.svg">
-						<img id="quick-item-offset-1-icon" class="icon">
-					</div>
-					<p id="quick-item-name" class="down-name">
-					<p id="quick-item-count" class="count">
-				</div>
-				<div id="left-hand" class="left">
-					<img id="left-hand-frame" class="frame" src="images/frame_equipment_pouch.svg">
-					<img id="left-hand-flash" class="flash" src="images/flash.svg">
-					<img id="left-hand-icon" class="icon">
-					<img id="left-hand-icon-secondary" class="icon-secondary">
-					<div id ="ammo">
-						<img id="ammo-frame" src="images/frame_equipment_pouch.svg">
-						<img id="ammo-icon" class="icon">
-						<p id="ammo-count" class="count"></p>
-					</div>
-					<p id="left-hand-name" class="left-name">
-					<p id="ammo-name"></p>
-				</div>
-				<div id="right-hand" class="right">
-					<img id="right-hand-frame" class="frame" src="images/frame_equipment_pouch.svg">
-					<img id="right-hand-flash" class="flash" src="images/flash.svg">
-					<img id="right-hand-icon" class="icon">
-					<img id="right-hand-icon-secondary" class="icon-secondary">
-					<p id="right-hand-name" class="right-name">
-				</div>
+		<div id="equipment">
+			<div id="voice" class="up">
+				<img id="voice-frame" class="frame" src="images/frame_equipment_pouch.svg">
+				<img id="voice-flash" class="flash"  src="images/flash.svg">
+				<img id="voice-flash-alt" class="flash"  src="images/flash_alt.svg">
+				<img id="voice-icon" class="icon">
+				<img id="voice-icon-secondary" class="icon-secondary">
+				<p id="voice-name" class="up-name">
 			</div>
-			<div id="pouch">
-				<div id="left-pouch" class="left">
-					<img id="left-pouch-frame" class="frame" src="images/frame_equipment_pouch.svg">
-					<img id="left-pouch-icon" class="icon">
-					<img id="left-pouch-icon-secondary" class="icon-secondary">
-					<p id="left-pouch-name" class="left-name">
-					<p id="left-pouch-count" class="count">
+			<div id="quick-item" class="down">
+				<img id="quick-item-frame" class="frame" src="images/frame_equipment_pouch.svg">
+				<img id="quick-item-flash" class="flash" src="images/flash.svg">
+				<img id="quick-item-flash-red" class="flash" src="images/flash_red.svg">
+				<img id="quick-item-icon" class="icon">
+				<img id="quick-item-icon-secondary" class="icon-secondary">
+				<div id="quick-item-offset-2">
+					<img id="quick-item-offset-2-frame" src="images/frame_equipment_pouch.svg">
+					<img id="quick-item-offset-2-icon" class="icon">
 				</div>
-				<div id="right-pouch" class="right">
-					<img id="right-pouch-frame" class="frame" src="images/frame_equipment_pouch.svg">
-					<img id="right-pouch-icon" class="icon">
-					<img id="right-pouch-icon-secondary" class="icon-secondary">
-					<p id="right-pouch-name" class="right-name">
-					<p id="right-pouch-count" class="count">
+				<div id="quick-item-offset-1">
+					<img id="quick-item-offset-1-frame" src="images/frame_equipment_pouch.svg">
+					<img id="quick-item-offset-1-icon" class="icon">
 				</div>
-				<div id="up-pouch" class="up">
-					<img id="up-pouch-frame" class="frame" src="images/frame_equipment_pouch.svg">
-					<img id="up-pouch-icon" class="icon">
-					<img id="up-pouch-icon-secondary" class="icon-secondary">
-					<p id="up-pouch-name" class="up-name">
-					<p id="up-pouch-count" class="count">
+				<p id="quick-item-name" class="down-name">
+				<p id="quick-item-count" class="count">
+			</div>
+			<div id="left-hand" class="left">
+				<img id="left-hand-frame" class="frame" src="images/frame_equipment_pouch.svg">
+				<img id="left-hand-flash" class="flash" src="images/flash.svg">
+				<img id="left-hand-icon" class="icon">
+				<img id="left-hand-icon-secondary" class="icon-secondary">
+				<div id ="ammo">
+					<img id="ammo-frame" src="images/frame_equipment_pouch.svg">
+					<img id="ammo-icon" class="icon">
+					<p id="ammo-count" class="count"></p>
 				</div>
-				<div id="down-pouch" class="down">
-					<img id="down-pouch-frame" class="frame" src="images/frame_equipment_pouch.svg">
-					<img id="down-pouch-icon" class="icon">
-					<img id="down-pouch-icon-secondary" class="icon-secondary">
-					<p id="down-pouch-name" class="down-name">
-					<p id="down-pouch-count" class="count">
-				</div>
+				<p id="left-hand-name" class="left-name">
+				<p id="ammo-name"></p>
+			</div>
+			<div id="right-hand" class="right">
+				<img id="right-hand-frame" class="frame" src="images/frame_equipment_pouch.svg">
+				<img id="right-hand-flash" class="flash" src="images/flash.svg">
+				<img id="right-hand-icon" class="icon">
+				<img id="right-hand-icon-secondary" class="icon-secondary">
+				<p id="right-hand-name" class="right-name">
 			</div>
 		</div>
-		<div id="bottom-right">
-			<div id="player-gold">
-				<img id="player-gold-frame" src="images/frame_gold.svg">
-				<p id="player-gold-count">
-				<p id="player-gold-delta">
+		<div id="pouch">
+			<div id="left-pouch" class="left">
+				<img id="left-pouch-frame" class="frame" src="images/frame_equipment_pouch.svg">
+				<img id="left-pouch-icon" class="icon">
+				<img id="left-pouch-icon-secondary" class="icon-secondary">
+				<p id="left-pouch-name" class="left-name">
+				<p id="left-pouch-count" class="count">
 			</div>
+			<div id="right-pouch" class="right">
+				<img id="right-pouch-frame" class="frame" src="images/frame_equipment_pouch.svg">
+				<img id="right-pouch-icon" class="icon">
+				<img id="right-pouch-icon-secondary" class="icon-secondary">
+				<p id="right-pouch-name" class="right-name">
+				<p id="right-pouch-count" class="count">
+			</div>
+			<div id="up-pouch" class="up">
+				<img id="up-pouch-frame" class="frame" src="images/frame_equipment_pouch.svg">
+				<img id="up-pouch-icon" class="icon">
+				<img id="up-pouch-icon-secondary" class="icon-secondary">
+				<p id="up-pouch-name" class="up-name">
+				<p id="up-pouch-count" class="count">
+			</div>
+			<div id="down-pouch" class="down">
+				<img id="down-pouch-frame" class="frame" src="images/frame_equipment_pouch.svg">
+				<img id="down-pouch-icon" class="icon">
+				<img id="down-pouch-icon-secondary" class="icon-secondary">
+				<p id="down-pouch-name" class="down-name">
+				<p id="down-pouch-count" class="count">
+			</div>
+		</div>
+		<div id="player-gold">
+			<img id="player-gold-frame" src="images/frame_gold.svg">
+			<p id="player-gold-count">
+			<p id="player-gold-delta">
 		</div>
 	</div>
 </body>

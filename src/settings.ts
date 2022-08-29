@@ -4,62 +4,55 @@ import { MOD_NAME, MOD_KEY } from "./constants";
 
 export const modSettings = settings[MOD_KEY];
 
-// Keys
-let editModeKeyCode = modSettings["editModeKey"] as number;
-let upKeyCode = modSettings["upKey"] as number;
-let downKeyCode = modSettings["downKey"] as number;
-let leftKeyCode = modSettings["leftKey"] as number;
-let rightKeyCode = modSettings["rightKey"] as number;
-let useKeyCode = modSettings["useKey"] as number;
-export const upKey: key = convertKeyValue(upKeyCode);
-export const downKey: key = convertKeyValue(downKeyCode);
-export const leftKey: key = convertKeyValue(leftKeyCode);
-export const rightKey: key = convertKeyValue(rightKeyCode);
-export const useKey: key = convertKeyValue(useKeyCode);
-export const disableControls: boolean = modSettings["disableControls"] as boolean;
+// Controls - Buttons
+export const upKey: key = convertKeyValue((modSettings["control_buttons"] as any)["up"] as number);
+export const downKey: key = convertKeyValue((modSettings["control_buttons"] as any)["down"] as number);
+export const leftKey: key = convertKeyValue((modSettings["control_buttons"] as any)["left"] as number);
+export const rightKey: key = convertKeyValue((modSettings["control_buttons"] as any)["right"] as number);
+export const itemUseKey: key = convertKeyValue((modSettings["control_buttons"] as any)["itemUse"] as number);
+export const editModeKey: key = convertKeyValue((modSettings["control_buttons"] as any)["editMode"] as number);
 
-// Hold times
-export const editModeHoldTime: number = modSettings["editModeHoldTime"] as number;
-export const quickItemResetHoldTime: number = modSettings["quickItemResetHoldTime"] as number;
-export const pouchAccessHoldTime: number = modSettings["pouchAccessHoldTime"] as number;
-export const uiInitTime: number = modSettings["uiInitTime"] as number;
+// Controls - Hold Times
+export const pouchAccessHoldTime: number = (modSettings["control_holdTimes"] as any)["pouchAccess"] as number;
+export const editModeHoldTime: number = (modSettings["control_holdTimes"] as any)["editMode"] as number;
+export const downKeyHoldTime: number = (modSettings["control_holdTimes"] as any)["downKey"] as number;
 
-// UI settings
-export const uiVisible: boolean = modSettings["uiVisible"] as boolean;
-export const uiDynamicVisibility: boolean = modSettings["uiDynamicVisibility"] as boolean;
-export const uiGoldWidgetVisibility: boolean = modSettings["uiGoldWidgetVisibility"] as boolean;
-export const uiOpacityTransitions: boolean = modSettings["uiOpacityTransitions"] as boolean;
-export const uiFlashFeedback: boolean = modSettings["uiFlashFeedback"] as boolean;
+// Controls - Other Options
+export const useQuickItemByHoldingDown: boolean = (modSettings["control_options"] as any)["useQuickItemByHoldingDown"] as boolean;
+export const separateEditKey: boolean = (modSettings["control_options"] as any)["useEditModeButton"] as boolean;
+export const disableControls: boolean = (modSettings["control_options"] as any)["disableControls"] as boolean;
+
+// UI - Positioning
+export const uiEquipmentPosition_X: number = (modSettings["position_ui"] as any)["equipmentX"] as number;
+export const uiEquipmentPosition_Y: number = (modSettings["position_ui"] as any)["equipmentY"] as number;
+export const uiGoldPosition_X: number = (modSettings["position_ui"] as any)["goldX"] as number;
+export const uiGoldPosition_Y: number = (modSettings["position_ui"] as any)["goldY"] as number;
+
+// UI - Scaling
+export const uiEquipmentScaleMult: number = (modSettings["scale_ui"] as any)["equipment"] as number;
+export const uiGoldScaleMult: number = (modSettings["scale_ui"] as any)["gold"] as number;
+
+// UI - Visibility
+export const uiVisible: boolean = !((modSettings["ui_visibility_options"] as any)["hideEverything"] as boolean);
+export const uiHandNameVisibility: boolean = (modSettings["ui_visibility_options"] as any)["showHandItemNames"] as boolean;
+export const uiDynamicVisibility: boolean = (modSettings["ui_visibility_options"] as any)["dynamicVisibility"] as boolean;
+export const uiGoldWidgetVisibility: boolean = (modSettings["ui_visibility_options"] as any)["showGoldWidget"] as boolean;
+
+// UI - Performance
+export const uiOpacityTransitions: boolean = !((modSettings["ui_performance_options"] as any)["disableOpacityTransitions"] as boolean);
+export const uiFlashFeedback: boolean = !((modSettings["ui_performance_options"] as any)["disableFlashFeedback"] as boolean);
+
 // Debug settings
-export const printCycles: boolean = modSettings["printCycles"] as boolean;
-export const uninstallMod: boolean = modSettings["uninstallMod"] as boolean;
-
-function validateKeys(): boolean {
-    let keyArr: number[] = [editModeKeyCode, upKeyCode, downKeyCode, leftKeyCode, rightKeyCode, useKeyCode];
-    for (let i = 0; i < keyArr.length; i++) {
-        // Out of bounds
-        if (keyArr[i] < 0 || keyArr[i] > 281)
-            return false;
-        for (let j = 0; j < keyArr.length; j++) {
-            // Not duplicate keys
-            if (i === j || keyArr[i] !== keyArr[j])
-                continue;
-            return false;
-        }
-    }
-    return true;
-}
+export const uiInitTime: number = (modSettings["debug"] as any)["uiInitTime"] as number;
+export const printCycles: boolean = (modSettings["debug"] as any)["printCycles"] as boolean;
+export const uninstallMod: boolean = (modSettings["debug"] as any)["uninstallMod"] as boolean;
 
 function validateTimes(): boolean {
-    return !(editModeHoldTime < 0 || quickItemResetHoldTime < 0 || pouchAccessHoldTime < 0 || uiInitTime < 0);
+    return !(editModeHoldTime < 0 || downKeyHoldTime < 0 || pouchAccessHoldTime < 0 || uiInitTime < 0);
 }
 
 export function validateSettings(): boolean {
     let returnValue = true;
-    if (!validateKeys()) {
-        returnValue = false;
-        printConsole(`${MOD_NAME} validateKeys(): false`);
-    }
     if (!validateTimes()) {
         returnValue = false;
         printConsole(`${MOD_NAME} validateTimes(): false`);
