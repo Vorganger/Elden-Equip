@@ -1,10 +1,5 @@
-// index_fun.ts
-// This filename might be confusing, but this file
-// contains functions to be used in index.ts, in which
-// index.ts contains events.
-
 import { Actor, Armor, browser, Debug, Form, FormType, Game, Input, InputDeviceType, Potion, printConsole, SlotMask, Ui, Utility } from "@skyrim-platform/skyrim-platform";
-import { setObj, solveForm, solveFormSetter } from "@skyrim-platform/jcontainers/JDB";
+import { setObj, solveForm, solveFormSetter, solveObjSetter } from "@skyrim-platform/jcontainers/JDB";
 import { Cycle, EquipmentCycle, QuickItemCycle } from "./cycles";
 import { Pouch } from "./pouch";
 import * as widget from "./widget";
@@ -114,12 +109,15 @@ export function initWidgets() {
     // Hand name visibility
     widget.changeVisibility("left-hand-name", settings.uiHandNameVisibility);
     widget.changeVisibility("right-hand-name", settings.uiHandNameVisibility);
-    widget.changeVisibility("ammo-name", settings.uiHandNameVisibility);
+    widget.changeVisibility("ammo-name", settings.uiAmmoNameVisibility);
     // Dynamic UI visibility
     if (settings.uiDynamicVisibility) {
-        widget.changeOpacity("equipment", 0, 0, 0);
-        widget.changeOpacity("player-gold", 0, 0, 0);
-        return;
+        if ((settings.uiDynamicVisibilityOnCombat && !player?.isInCombat()) ||
+            !settings.uiDynamicVisibilityOnCombat) {
+                widget.changeOpacity("equipment", 0, 0, 0);
+                widget.changeOpacity("player-gold", 0, 0, 0);
+                return;
+        }
     }
     widget.changeOpacity("equipment", 0, 0, 1);
     widget.changeOpacity("player-gold", 0, 0, 1);
@@ -135,10 +133,19 @@ export function uninstallMod() {
     // Removes Elden Equip from JContainers
     setObj(consts.MOD_KEY, 0);
     browser.setVisible(false);
-    Debug.messageBox(`${consts.MOD_NAME} uninstalled.`);
+    Debug.messageBox(`Uninstalled ${consts.MOD_NAME}.`);
 }
 
-export function printCycles() {
+function resetCycles() {
+    // Removes Elden Equip cycle arrays from JContainers
+    solveObjSetter(consts.LEFTHAND_ARRAY, 0, false);
+    solveObjSetter(consts.RIGHTHAND_ARRAY, 0, false);
+    solveObjSetter(consts.VOICE_ARRAY, 0, false);
+    solveObjSetter(consts.AMMO_ARRAY, 0, false);
+    solveObjSetter(consts.QUICKITEM_ARRAY, 0, false);
+}
+
+function printCycles() {
     leftHandCycle.printCycleNames();
     rightHandCycle.printCycleNames();
     voiceCycle.printCycleNames();
@@ -154,17 +161,19 @@ export async function initialize() {
         return;
     allowInit = false;
     // Pre-initialization
-    if (!settings.validateSettings())
-        return;
     if (settings.uninstallMod) {
         uninstallMod();
         return;
     }
     // Main initialization
     initVariables();
-    initCycles();
+    if (settings.resetCycles)
+        resetCycles();
+    else
+        initCycles();
     initUI();
-    printConsole(`${consts.MOD_NAME} is initialized!`);
+    if (settings.initNotification)
+        printConsole(`${consts.MOD_NAME} is initialized!`);
     if (settings.printCycles)
         printCycles();
     // Delay to allow other initialize() calls
@@ -351,7 +360,7 @@ export function updateAmmoNameVisibility() {
     if (!ammoNameVisible.isEnabled)
         return;
     if (ammoNameVisible.startTime === -1) {
-        if (!settings.uiHandNameVisibility)
+        if (!settings.uiAmmoNameVisibility)
             return;
         widget.changeOpacity("ammo-name", 0.2, 0, 1);
         widget.changeOpacity("ammo", 0.2, 0, 0.5);
@@ -366,7 +375,8 @@ export function updateAmmoNameVisibility() {
     }
 }
 export function updateEquipmentUIVisibility() {
-    if (!equipmentVisible.isEnabled || playerInCombat)
+    // Conditions where the UI should not fade in/out
+    if (!equipmentVisible.isEnabled || (playerInCombat && settings.uiDynamicVisibilityOnCombat))
         return;
     if (equipmentVisible.startTime === -1) {
         widget.changeOpacity("equipment", 0.2, 0, 1);
@@ -383,7 +393,8 @@ export function updateEquipmentUIVisibility() {
     }
 }
 export function updateGoldUIVisibility() {
-    if (!goldVisible.isEnabled || playerInCombat)
+    // Conditions where the UI should not fade in/out
+    if (!goldVisible.isEnabled || (playerInCombat && settings.uiDynamicVisibilityOnCombat))
         return;
     if (goldVisible.startTime === -1) {
         widget.changeOpacity("player-gold", 0.2, 0, 1);
@@ -397,9 +408,12 @@ export function updateGoldUIVisibility() {
     }
 }
 export function updateCombatUIOpacity(isInCombat: boolean) {
-    // Enter/exit combat opacity
-    if (pouch.isOpen)
+    if (!settings.uiDynamicVisibility ||
+        !settings.uiDynamicVisibilityOnCombat ||
+        pouch.isOpen)
+    {
         return;
+    }
     // Enters combat
     if (isInCombat) {
         widget.changeOpacity("equipment", 0.2, 0, 1);
@@ -507,7 +521,7 @@ export function rightHandEquipEvent(currentRH: Form) {
 
     // Updates visibility. Requires bow equipped.
     if (playerHoldingBow) {
-        if (settings.uiHandNameVisibility)
+        if (settings.uiAmmoNameVisibility)
             widget.changeOpacity("ammo", 0, 0, 0.5); // always sets to half opacity
         widget.setAmmoWidgetVisibility(true);
         startTimer(ammoNameVisible);
@@ -545,7 +559,7 @@ export function voiceEquipEvent(currentVoice: Form) {
 }
 
 export function ammoEquipEvent(equipped: Form) {
-    if (settings.uiHandNameVisibility)
+    if (settings.uiAmmoNameVisibility)
         widget.changeOpacity("ammo", 0, 0, 0.5); // always sets to half opacity
     if (equipped === solveForm(consts.AMMO_RECENT))
         return;
@@ -781,7 +795,7 @@ export function downKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
     if (!menuClosed || Ui.isMenuOpen("LootMenu"))
         return;
     if (isDown) {
-        if (settings.useQuickItemByHoldingDown)
+        if (settings.useQuickItemByHoldingDownButton)
             return;
         advanceQuickItemCycle();
         return;
@@ -791,7 +805,7 @@ export function downKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
             downKeyHold.isActionCompleted = false;
             return;
         }
-        if (!settings.useQuickItemByHoldingDown)
+        if (!settings.useQuickItemByHoldingDownButton)
             return;
         advanceQuickItemCycle();
         return;
@@ -813,7 +827,7 @@ export function downKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
         if (settings.uiDynamicVisibility && !pouch.isOpen)
             startTimer(equipmentVisible);
         // Quick item use.
-        if (settings.useQuickItemByHoldingDown) {
+        if (settings.useQuickItemByHoldingDownButton) {
             quickItemCycle.use();
         }
         // Quick item index reset.
@@ -840,7 +854,7 @@ export function activateKeyEvent(isDown: boolean, isUp: boolean, isHeld: boolean
         // Confirms that the ammo name can be displayed
         if (playerHoldingBow)
             startTimer(ammoNameVisible);
-        if (!settings.uiDynamicVisibility)
+        if (!settings.uiDynamicVisibilityOnActivate)
             return;
         startTimer(equipmentVisible);
         startTimer(goldVisible);
@@ -851,7 +865,15 @@ export function activateKeyEvent(isDown: boolean, isUp: boolean, isHeld: boolean
             return;
         pouch.isOpen = false;
         widget.changeOpacity("pouch", 0.2, 0, 0);
+        // Dynamic visibility is enabled and showOnActivateButtonPress is disabled
+        if (settings.uiDynamicVisibility && !settings.uiDynamicVisibilityOnActivate) {
+            // Does not show equipment depending on combat state and settings
+            if ((settings.uiDynamicVisibilityOnCombat && !playerInCombat) || !settings.uiDynamicVisibilityOnCombat)
+                return;
+        }
         widget.changeOpacity("equipment", 0.1, 0, 1);
+        if (!settings.uiDynamicVisibilityOnActivate)
+            return;
         if (settings.uiDynamicVisibility)
             startTimer(equipmentVisible);
         return;
@@ -868,7 +890,9 @@ export function activateKeyEvent(isDown: boolean, isUp: boolean, isHeld: boolean
 }
 
 export function openEditMode() {
-    Debug.notification(`Opened Edit Mode.`);
+    if (settings.editModeNotification) {
+        Debug.notification(`Opened Edit Mode.`);
+    }
     if (settings.uiDynamicVisibility)
         widget.changeOpacity("equipment", 0, 0, 1);
     widget.changeSource("left-hand-frame", consts.FRAME_EDIT_MODE_IMAGE);
@@ -883,7 +907,9 @@ export function openEditMode() {
 }
 
 export function closeEditMode() {
-    Debug.notification(`Closed Edit Mode.`);
+    if (settings.editModeNotification) {
+        Debug.notification(`Closed Edit Mode.`);
+    }
     // Updates JContainers
     utils.writeObjArrToJCon(voiceCycle.arr, consts.VOICE_ARRAY);
     utils.writeObjArrToJCon(quickItemCycle.arr, consts.QUICKITEM_ARRAY);
@@ -906,10 +932,10 @@ export function closeEditMode() {
 // Includes edit mode key by if the separateEditKey setting is set to false.
 // Makes it easier for gamepad users to not switch back and forth between
 // either gamepad or keyboard and mouse.
-export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
+export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean) {
     if (device !== settings.itemUseKey.device)
         return;
-    if (settings.useQuickItemByHoldingDown || !menuClosed || Ui.isMenuOpen("LootMenu"))
+    if (settings.useQuickItemByHoldingDownButton || !menuClosed || Ui.isMenuOpen("LootMenu"))
         return;
     if (isDown) {
         if (editMode.isLoading || editMode.isLoadingComplete || editMode.isOpen)
@@ -927,39 +953,9 @@ export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean, 
             quickItemCycle.use();
             return;
         }
-        if (pouch.isOpen)
-            return;
-        // Cancel edit mode load
-        if (editMode.isLoading && !editMode.isOpen) {
-            editMode.isLoading = false;
-            if (settings.uiDynamicVisibility)
-                startTimer(equipmentVisible);
-            return;
-        }
-        // Initial key release after loading edit mode
-        if (!editMode.isOpen && editMode.isLoadingComplete) {
-            editMode.isLoadingComplete = false;
-            editMode.isOpen = true;
-            return;
-        }
-        if (editMode.isOpen && !editMode.isLoadingComplete) {
-            closeEditMode();
-            return;
-        }
-        return;
-    }
-    if (isHeld) {
-        // Load edit mode
-        if (settings.separateEditKey || heldDuration < settings.editModeHoldTime || pouch.isOpen || editMode.isOpen)
-            return;
-        openEditMode();
-        return;
     }
 }
 
-// Note: using a bunch of the same code from the itemUseEvent() function
-// only to enter and exit edit mode.
-// Can only be used if the separateEditKey is set to true.
 export function editModeKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
     if (device !== settings.editModeKey.device)
         return;
@@ -997,7 +993,7 @@ export function editModeKeyEvent(device: number, isDown: boolean, isUp: boolean,
     }
     if (isHeld) {
         // Load edit mode
-        if (!settings.separateEditKey || heldDuration < settings.editModeHoldTime || pouch.isOpen || editMode.isOpen)
+        if (heldDuration < settings.editModeHoldTime || pouch.isOpen || editMode.isOpen)
             return;
         openEditMode();
         return;

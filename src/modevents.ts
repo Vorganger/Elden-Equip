@@ -1,8 +1,3 @@
-// modevents.ts
-// Sends a modEvent to the Papyrus script. Serves as an alternative
-// to the freezing that occurs when calling these functions in
-// Skyrim Platform.
-
 import * as sp from "@skyrim-platform/skyrim-platform";
 
 export function equipItemPapyrus(item: sp.Form) {

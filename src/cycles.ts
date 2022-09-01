@@ -1,7 +1,15 @@
 import { Debug, Form, FormType, Game, printConsole } from "@skyrim-platform/skyrim-platform";
 import { solveForm, solveInt, solveIntSetter } from "@skyrim-platform/jcontainers/JDB";
 import { equip, unequip, writeObjArrToJCon } from "./utilities";
+import { editModeNotification } from "./settings";
 import * as consts from "./constants";
+
+// Messages when adding or removing
+export function printEditModeMessage(message: string) {
+    if (!editModeNotification)
+        return;
+    Debug.notification(message);
+}
 
 export class Cycle {
     arr: number[];
@@ -150,11 +158,11 @@ export class EquipmentCycle extends Cycle {
     add(newItemID: number): void {
         let newItemName = Game.getFormEx(newItemID)?.getName();
         if (this.arr.includes(newItemID)) {
-            Debug.notification(`${newItemName} is in the ${this.name} cycle.`);
+            printEditModeMessage(`${newItemName} is in the ${this.name} cycle.`);
             return;
         }
         this.arr.splice(this.index + 1, 0, newItemID);
-        Debug.notification(`Added ${newItemName} to the ${this.name} cycle.`);
+        printEditModeMessage(`Added ${newItemName} to the ${this.name} cycle.`);
     }
     remove(): void {
         let removedName = "";
@@ -163,7 +171,7 @@ export class EquipmentCycle extends Cycle {
         let equippedItem = this.getEquippedItem();
         let equippedItemIndex = this.arr.indexOf(equippedItem?.getFormID() ?? 0);
         if (equippedItemIndex === -1) {
-            Debug.notification(`${equippedItem?.getName() ?? ""} does not exist in the ${this.name} cycle`);
+            printEditModeMessage(`${equippedItem?.getName() ?? ""} does not exist in the ${this.name} cycle`);
             this.use();
             return;
         }
@@ -171,7 +179,7 @@ export class EquipmentCycle extends Cycle {
         removedIndex = equippedItemIndex;
         // Removes item at the current index.
         this.arr.splice(removedIndex, 1);
-        Debug.notification(`Removed ${removedName} from the ${this.name} cycle.`);
+        printEditModeMessage(`Removed ${removedName} from the ${this.name} cycle.`);
         // Equips/unequips, depending on the current index.
         this.use();
     }
@@ -221,7 +229,7 @@ export class QuickItemCycle extends Cycle {
         if (itemType !== FormType.Potion && itemType !== FormType.Armor)
             return;
         if (this.arr.includes(itemID)) {
-            Debug.notification(`${item?.getName()} is in the ${this.name} cycle.`);
+            printEditModeMessage(`${item?.getName()} is in the ${this.name} cycle.`);
             return;
         }
         if (this.index >= this.arr.length) {
@@ -232,12 +240,12 @@ export class QuickItemCycle extends Cycle {
         // Advances index
         if (this.arr.length >= 1)
             this.index++;
-        Debug.notification(`Added ${Game.getFormEx(itemID)?.getName()} to the ${this.name} cycle.`);
+        printEditModeMessage(`Added ${Game.getFormEx(itemID)?.getName()} to the ${this.name} cycle.`);
     }
     remove(): void {
         let itemID = this.getItemId();
         if (!itemID) {
-            Debug.notification(`Cannot remove empty slot from the ${this.name} cycle.`);
+            printEditModeMessage(`Cannot remove empty slot from the ${this.name} cycle.`);
             return;
         }
         if (this.arr.length === 0 || this.index >= this.arr.length)
@@ -246,6 +254,6 @@ export class QuickItemCycle extends Cycle {
         // In case the last index was deleted
         if (this.index >= this.arr.length)
             this.index = 0;
-        Debug.notification(`Removed ${Game.getFormEx(itemID)?.getName()} from the ${this.name} cycle.`);
+        printEditModeMessage(`Removed ${Game.getFormEx(itemID)?.getName()} from the ${this.name} cycle.`);
     }
 }

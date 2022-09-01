@@ -69,6 +69,7 @@ on("equip", (event) => {
     if (!fun.isInit || event.actor.getFormID() !== consts.PLAYER_ID)
         return;
     let player = Actor.from(event.actor);
+    let equipped = Form.from(event.baseObj);
     if (!equipped)
         return;
     // Right hand
@@ -146,8 +147,7 @@ on("buttonEvent", (event) => {
             fun.downKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;
         case settings.itemUseKey.code:
-            fun.itemUseKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
-            return;
+            fun.itemUseKeyEvent(event.device, event.isDown, event.isUp);
         case settings.editModeKey.code:
             fun.editModeKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;

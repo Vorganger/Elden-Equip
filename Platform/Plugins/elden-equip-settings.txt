@@ -1,23 +1,66 @@
 {
-	"inputScriptURL": "https://www.creationkit.com/index.php?title=Input_Script#DXScanCodes",
-	"upKey": 266,
-	"downKey": 267,
-	"leftKey": 268,
-	"rightKey": 269,
-	"useKey": 278,
-	"disableControls": false,
+	"control_buttons": {
+		"buttons_reference": "https://www.creationkit.com/index.php?title=Input_Script#DXScanCodes",
+		"up": 266,
+		"down": 267,
+		"left": 268,
+		"right": 269,
+		"itemUse": 278,
+		"editMode": 278
+	},
 	
-	"editModeHoldTime": 0.3,
-	"quickItemResetHoldTime": 0.5,
-	"pouchAccessHoldTime": 0.3,
-	"uiInitTime": 2,
+	"control_holdTimes": {
+		"editModeButton": 0.3,
+		"pouchAccess": 0.3,
+		"downButton": 0.5
+	},
 	
-	"uiVisible": true,
-	"uiDynamicVisibility": true,
-	"uiGoldWidgetVisibility": true,
-	"uiOpacityTransitions": true,
-	"uiFlashFeedback": true,
+	"control_options": {
+		"useQuickItemByHoldingDownButton": false,
+		"disableControls": false
+	},
 	
-	"printCycles": false,
-	"uninstallMod": false
+	
+	"position_ui": {
+		"equipmentX": 2,
+		"equipmentY": 5,
+		"goldX": 98,
+		"goldY": 2
+	},
+	
+	"scale_ui": {
+		"equipment": 1,
+		"gold": 1
+	},
+	
+	"ui_visibility_options": {
+		"hideEverything": false,
+		"hideHandItemNames": false,
+		"hideAmmoItemName": false,
+		"hideGoldWidget": false
+	},
+	
+	"dynamic_ui_visibility": {
+		"enabled": true,
+		"showOnCombat": true,
+		"showOnActivateButtonPress": true
+	},
+	
+	"ui_performance_options": {
+		"disableOpacityTransitions": false,
+		"disableFlashFeedback": false
+	},
+	
+	
+	"notifications": {
+		"initialization": true,
+		"editMode": true
+	},
+	
+	"debug": {
+		"uiInitializationTime": 5,
+		"printCycles": false,
+		"resetCycles": false,
+		"uninstallMod": false
+	}
 }

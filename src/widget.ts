@@ -143,6 +143,8 @@ function updateIconArmor(item: Form, iconElement: string) {
         case 4098: // head
             if (weightClass === 0)
                 changeSource(iconElement, consts.ARMOR_HEAD_LIGHT_ICON);
+            if (weightClass === 1)
+            changeSource(iconElement, consts.ARMOR_HEAD_HEAVY_ICON);
             if (weightClass === 2)
                 changeSource(iconElement, consts.ARMOR_HEAD_ICON);
             return;
@@ -500,10 +502,10 @@ export async function updateAmmoWidget() {
     // Updates icon opacity based on ammo and weapon are compatibility.
     let weapon = Weapon.from(player?.getEquippedObject(1) ?? null);
     if (utils.isAmmoCompatible(weapon, Ammo.from(ammo))) {
-        changeOpacity("ammo-icon", 0.2, 0, 1);
+        changeOpacity("ammo-icon", 0, 0, 1);
         return;
     }
-    changeOpacity("ammo-icon", 0.2, 0, 0.5);
+    changeOpacity("ammo-icon", 0, 0, 0.5);
 }
 
 export function flashAnim(element: number) {
