@@ -4,6 +4,19 @@ export const PICKAXE_ID = 0xe3c16;
 export const NOTCHED_PICKAXE_ID = 0x1019d4;
 export const WOODCUTTERS_AXE_ID = 0x2f2f4;
 
+// Magic Effect IDs
+export const RESIST_FIRE_ID = 0x3eaea;
+export const RESIST_FROST_ID = 0x3eaeb;
+export const RESIST_SHOCK_ID = 0x3eaec;
+export const REGENERATE_HEALTH_ID = 0x3eaf3;
+export const REGENERATE_MAGICKA_ID = 0x3eaf8;
+export const REGENERATE_STAMINA_ID = 0x3eaf9;
+export const RESTORE_HEALTH_ID = 0x3eb15;
+export const RESTORE_STAMINA_ID = 0x3eb16;
+export const RESTORE_MAGICKA_ID = 0x3eb17;
+export const RESTORE_HEALTH_FOOD_ID = 0xf33cb;
+export const RESTORE_STAMINA_FOOD_ID = 0xf33cc;
+
 export const MOD_NAME = "Elden Equip";
 export const MOD_KEY = "elden-equip";
 export const UI_PATH = "file:///Data/Platform/UI/elden-equip-ui.html"

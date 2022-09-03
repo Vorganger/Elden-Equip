@@ -1,4 +1,4 @@
-import { Ammo, Armor, browser, Game, Form, FormType, MagicEffect, Potion, SlotMask, Spell, Ui, Utility, Weapon, WeaponType } from "@skyrim-platform/skyrim-platform";
+import { Ammo, Armor, browser, Game, Form, FormType, MagicEffect, Potion, SlotMask, Spell, Ui, Utility, Weapon, WeaponType, printConsole } from "@skyrim-platform/skyrim-platform";
 import { solveForm } from "@skyrim-platform/jcontainers/JDB";
 import * as settings from "./settings";
 import * as utils from "./utilities";
@@ -281,62 +281,52 @@ function updateIconAmmo(item: Form, iconElement: string) {
 
 function updateIconPotion(item: Form, iconElement: string) {
     let potion = Potion.from(item);
-    if (!potion)
-        return;
-    let potionMagicEffect = potion.getNthEffectMagicEffect(0);
-    if (!potionMagicEffect)
-        return;
-    let potionMagicEffectName = potionMagicEffect.getName().toLowerCase();
-    if (!potionMagicEffectName)
-        return;
+    switch (potion?.getNthEffectMagicEffect(0)?.getFormID()) {
+        // Resistance potions
+        case consts.RESIST_FIRE_ID:
+            changeSource(iconElement, consts.POTION_RESIST_FIRE_ICON);
+            return;
+        case consts.RESIST_FROST_ID:
+            changeSource(iconElement, consts.POTION_RESIST_FROST_ICON);
+            return;
+        case consts.RESIST_SHOCK_ID:
+            changeSource(iconElement, consts.POTION_RESIST_SHOCK_ICON);
+            return;
+        // Regeneration potions
+        case consts.REGENERATE_HEALTH_ID:
+            changeSource(iconElement, consts.POTION_HEALTH_ICON);
+            return;
+        case consts.REGENERATE_STAMINA_ID:
+            changeSource(iconElement, consts.POTION_STAMINA_ICON);
+            return;
+        case consts.REGENERATE_MAGICKA_ID:
+            changeSource(iconElement, consts.POTION_MAGICKA_ICON);
+            return;
+        // Restoration potions
+        case consts.RESTORE_HEALTH_ID:
+            changeSource(iconElement, consts.POTION_HEALTH_ICON);
+            return;
+        case consts.RESTORE_STAMINA_ID:
+            changeSource(iconElement, consts.POTION_STAMINA_ICON);
+            return;
+        case consts.RESTORE_MAGICKA_ID:
+            changeSource(iconElement, consts.POTION_MAGICKA_ICON);
+            return;
+        // Restoration foods
+        case consts.RESTORE_HEALTH_FOOD_ID:
+            changeSource(iconElement, consts.POTION_FOOD_ICON);
+            return;
+        case consts.RESTORE_STAMINA_FOOD_ID:
+            changeSource(iconElement, consts.POTION_ALCOHOL_ICON);
+            return;
+    }
     // Poisons
-    if (potion.isPoison()) {
+    if (potion?.isPoison()) {
         changeSource(iconElement, consts.POTION_POISON_ICON);
         return;
     }
-    // Food
-    if (potion.isFood()) {
-        if (potionMagicEffectName.includes("health")) {
-            changeSource(iconElement, consts.POTION_FOOD_ICON);
-            return;
-        }
-        if (potionMagicEffectName.includes("stamina")) {
-            changeSource(iconElement, consts.POTION_ALCOHOL_ICON);
-            return;
-        }
-        return;
-    }
-    // Resistance potions
-    if (potionMagicEffectName.includes("resist")) {
-        if (potionMagicEffectName.includes("frost")) {
-            changeSource(iconElement, consts.POTION_RESIST_FROST_ICON);
-            return;
-        }
-        if (potionMagicEffectName.includes("fire")) {
-            changeSource(iconElement, consts.POTION_RESIST_FIRE_ICON);
-            return;
-        }
-        if (potionMagicEffectName.includes("shock")) {
-            changeSource(iconElement, consts.POTION_RESIST_SHOCK_ICON);
-            return;
-        }
-        return;
-    }
-    // Restoration potions
-    if (potionMagicEffectName.includes("health")) {
-        changeSource(iconElement, consts.POTION_HEALTH_ICON);
-        return;
-    }
-    if (potionMagicEffectName.includes("stamina")) {
-        changeSource(iconElement, consts.POTION_STAMINA_ICON);
-        return;
-    }
-    if (potionMagicEffectName.includes("magicka")) {
-        changeSource(iconElement, consts.POTION_MAGICKA_ICON);
-        return;
-    }
+    // Generic potion
     changeSource(iconElement, consts.POTION_ICON);
-    return;
 }
 
 function updateIcon(item: Form | null, iconElement: string) {
@@ -440,8 +430,7 @@ export function updateEquippedItemWidget(slot: number, item: Form | null) {
 export function updateQuickItemWidget(item: Form | null, firstNextItem: Form | null, secondNextItem: Form | null) {
     if (!settings.uiVisible)
         return;
-    let itemName = item?.getName() ?? "";
-    changeTextContent("quick-item-name", itemName);
+    changeTextContent("quick-item-name", item?.getName() ?? "");
     updateItemCount("quick-item-count", "quick-item-icon", item);
     updateIcon(item, "quick-item-icon");
     if (!firstNextItem) {
@@ -476,8 +465,7 @@ export function updatePouchWidget(item: Form | null, pouchIndex: number) {
         case 3:
             elementPrefix = "down-pouch"; break;
     }
-    let itemName = (item) ? item.getName() : "";
-    changeTextContent(`${elementPrefix}-name`, itemName);
+    changeTextContent(`${elementPrefix}-name`, item?.getName() ?? "");
     updateItemCount(`${elementPrefix}-count`, `${elementPrefix}-icon`, item);
     updateIcon(item, `${elementPrefix}-icon`);
 }
@@ -497,7 +485,7 @@ export async function updateAmmoWidget() {
     let ammo = solveForm(consts.AMMO_RECENT) ?? null;
     // Updates the icon, name, and count
     updateIcon(ammo, "ammo-icon");
-    changeTextContent("ammo-name", ((ammo) ? ammo.getName() : ""));
+    changeTextContent("ammo-name", (ammo?.getName() ?? ""));
     changeTextContent("ammo-count", ((ammo) ? player?.getItemCount(ammo).toString() ?? "" : ""));
     // Updates icon opacity based on ammo and weapon are compatibility.
     let weapon = Weapon.from(player?.getEquippedObject(1) ?? null);
