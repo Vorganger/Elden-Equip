@@ -1,5 +1,5 @@
 import { Actor, Armor, browser, Debug, Form, FormType, Game, Input, InputDeviceType, Potion, printConsole, SlotMask, Ui, Utility } from "@skyrim-platform/skyrim-platform";
-import { setObj, solveForm, solveFormSetter, solveObjSetter } from "@skyrim-platform/jcontainers/JDB";
+import { solveForm, solveFormSetter } from "@skyrim-platform/jcontainers/JDB";
 import { Cycle, EquipmentCycle, QuickItemCycle } from "./cycles";
 import { Pouch } from "./pouch";
 import * as widget from "./widget";
@@ -71,17 +71,22 @@ export function initCycles() {
     quickItemCycle.offsetTwoCount = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemIdOffset(2))) ?? 0;
 }
 
+// Resets all current cycle objects' arrays.
+export function resetCyclesFunc() {
+    leftHandCycle.arr = [];
+    rightHandCycle.arr = [];
+    voiceCycle.arr = [];
+    ammoCycle.arr = [];
+    quickItemCycle.arr = [];
+}
+
 export function initBrowser() {
-    if (!settings.uiVisible) {
-        browser.setVisible(false);
-        return;
-    }
     browser.loadUrl(consts.UI_PATH);
     browser.setFocused(false);
-    browser.setVisible(true);
 }
 
 export function initWidgets() {
+    browser.setVisible(!settings.hideWidgets);
     let player = Game.getPlayer();
     widget.initWidgetPosition();
     widget.initWidgetScale();
@@ -95,57 +100,36 @@ export function initWidgets() {
     widget.updateAmmoWidget();
     widget.setAmmoWidgetVisibility(playerHoldingBow);
     // Pouches
-    widget.updatePouchWidget(Game.getHotkeyBoundObject(0) ?? null, 0);
-    widget.updatePouchWidget(Game.getHotkeyBoundObject(1) ?? null, 1);
-    widget.updatePouchWidget(Game.getHotkeyBoundObject(2) ?? null, 2);
-    widget.updatePouchWidget(Game.getHotkeyBoundObject(3) ?? null, 3);
+    widget.updatePouchWidget(Game.getHotkeyBoundObject(0 + settings.pouchOffset) ?? null, 0);
+    widget.updatePouchWidget(Game.getHotkeyBoundObject(1 + settings.pouchOffset) ?? null, 1);
+    widget.updatePouchWidget(Game.getHotkeyBoundObject(2 + settings.pouchOffset) ?? null, 2);
+    widget.updatePouchWidget(Game.getHotkeyBoundObject(3 + settings.pouchOffset) ?? null, 3);
     // Gold
     widget.updateGoldCount(playerGold);
-    if (!settings.uiGoldWidgetVisibility)
-        widget.changeVisibility("player-gold", false);
+    widget.changeVisibility("player-gold", !settings.hideGoldWidget);
     // UI visibility
     if (menuClosed)
         widget.changeOpacity("ui", 0, 0, 1);
     // Hand name visibility
-    widget.changeVisibility("left-hand-name", settings.uiHandNameVisibility);
-    widget.changeVisibility("right-hand-name", settings.uiHandNameVisibility);
-    widget.changeVisibility("ammo-name", settings.uiAmmoNameVisibility);
+    widget.changeVisibility("left-hand-name", !settings.hideHandNames);
+    widget.changeVisibility("right-hand-name", !settings.hideHandNames);
+    widget.changeVisibility("ammo-name", !settings.hideAmmoName);
     // Dynamic UI visibility
-    if (settings.uiDynamicVisibility) {
-        if ((settings.uiDynamicVisibilityOnCombat && !player?.isInCombat()) ||
-            !settings.uiDynamicVisibilityOnCombat) {
-                widget.changeOpacity("equipment", 0, 0, 0);
-                widget.changeOpacity("player-gold", 0, 0, 0);
+    if (settings.widgetDynamicVisibility) {
+        if (settings.widgetDVOnCombat) {
+            if (!player?.isInCombat()) {
+                setDynamicVisibility(false, 0);
                 return;
+            }
         }
     }
-    widget.changeOpacity("equipment", 0, 0, 1);
-    widget.changeOpacity("player-gold", 0, 0, 1);
+    setDynamicVisibility(true, 0);
 }
 
-export async function initUI() {
-    initBrowser();
-    await Utility.wait(settings.uiInitTime);
-    initWidgets();
-}
+export let allowInit = true;
+export let isInit = false;
 
-export function uninstallMod() {
-    // Removes Elden Equip from JContainers
-    setObj(consts.MOD_KEY, 0);
-    browser.setVisible(false);
-    Debug.messageBox(`Uninstalled ${consts.MOD_NAME}.`);
-}
-
-function resetCycles() {
-    // Removes Elden Equip cycle arrays from JContainers
-    solveObjSetter(consts.LEFTHAND_ARRAY, 0, false);
-    solveObjSetter(consts.RIGHTHAND_ARRAY, 0, false);
-    solveObjSetter(consts.VOICE_ARRAY, 0, false);
-    solveObjSetter(consts.AMMO_ARRAY, 0, false);
-    solveObjSetter(consts.QUICKITEM_ARRAY, 0, false);
-}
-
-function printCycles() {
+export function printCyclesConsole() {
     leftHandCycle.printCycleNames();
     rightHandCycle.printCycleNames();
     voiceCycle.printCycleNames();
@@ -153,63 +137,59 @@ function printCycles() {
     quickItemCycle.printCycleNames();
 }
 
-export let allowInit = true;
-export let isInit = false;
-
 export async function initialize() {
     if (!allowInit)
         return;
     allowInit = false;
-    // Pre-initialization
-    if (settings.uninstallMod) {
-        uninstallMod();
-        return;
-    }
     // Main initialization
+    initBrowser();
+    await Utility.wait(consts.UI_INIT_TIME);
     initVariables();
-    if (settings.resetCycles)
-        resetCycles();
-    else
-        initCycles();
-    initUI();
-    if (settings.initNotification)
+    initCycles();
+    updateActivateKey();
+    settings.updateMCMSettings();
+    if (settings.initMessage)
         printConsole(`${consts.MOD_NAME} is initialized!`);
-    if (settings.printCycles)
-        printCycles();
     // Delay to allow other initialize() calls
     await Utility.wait(1);
     isInit = true;
     allowInit = true;
 }
 
-
-
 // --------------------
 // After initialization
 // --------------------
 
 // Control/menu states
-export let downKeyHold = { isActionCompleted: false }; // prevents the same action from being run again
+
+// Prevents the same action from being run again when held.
+export let upKeyHold = { isActionCompleted: false };
+export let downKeyHold = { isActionCompleted: false };
+export let leftKeyHold = { isActionCompleted: false };
+export let rightKeyHold = { isActionCompleted: false };
+// Pouch
 export let pouch = { isOpen: false };
-export let editMode = { isLoading: false, isLoadingComplete: false, isOpen: false };
+// Cycle editor
+export let cycleEditor = { isLoading: false, isLoadingComplete: false, isOpen: false };
 
 // Timers (duration in milliseconds)
 export let currentTime = 0;
-export let interval = { startTime: -1, duration: 300 };                                // Minimizes the number of functions run in the on("update") event
-export let equipmentVisible = { isEnabled: false, startTime: -1, duration: 5000 };     // Shows/hides equipment widget
-export let leftHandNameVisible = { isEnabled: false, startTime: -1, duration: 1500 };  // Shows/hides left hand name
-export let rightHandNameVisible = { isEnabled: false, startTime: -1, duration: 1500 }; // Shows/hides right hand name
-export let ammoNameVisible = { isEnabled: false, startTime: -1, duration: 1500 };      // Shows/hides ammo name
-export let goldVisible = { isEnabled: false, startTime: -1, duration: 5000 };          // Shows/hides gold widget
-export let editModeRemoveTimer = { isEnabled: false, startTime: -1, duration: 1000 };  // Prevents add/remove equip conflicts in edit mode
+export let updateInterval = { startTime: -1, duration: 300 };                          // Minimizes the number of functions run in the on("update") event.
+export let equipmentVisible = { isEnabled: false, startTime: -1, duration: 5000 };     // Shows/hides equipment widget.
+export let leftHandNameVisible = { isEnabled: false, startTime: -1, duration: 1500 };  // Shows/hides left hand name.
+export let rightHandNameVisible = { isEnabled: false, startTime: -1, duration: 1500 }; // Shows/hides right hand name.
+export let ammoNameVisible = { isEnabled: false, startTime: -1, duration: 1500 };      // Shows/hides ammo name.
+export let goldVisible = { isEnabled: false, startTime: -1, duration: 5000 };          // Shows/hides gold widget.
+export let cycleEditorRemoveTimer = { isEnabled: false, startTime: -1, duration: 1000 };  // Prevents add/remove equip conflicts in cycle editor.
+export let exitMenuTimer = { isEnabled: false, startTime: -1, duration: 100 };         // Prevents controls for sometime after exiting a menu.
 
 export function updateTime() {
     currentTime = Date.now();
 }
 
 export function onUpdateInterval() {
-    if ((currentTime - interval.startTime) > interval.duration) {
-        interval.startTime = currentTime;
+    if ((currentTime - updateInterval.startTime) > updateInterval.duration) {
+        updateInterval.startTime = currentTime;
         return true;
     }
     return false;
@@ -236,7 +216,7 @@ export function updateAmmoCount(player: Actor | null) {
         return;
     ammoCycle.count = currentAmmoCount;
     widget.changeTextContent("ammo-count", currentAmmoCount.toString());
-    if (settings.uiDynamicVisibility)
+    if (settings.widgetDynamicVisibility)
         startTimer(equipmentVisible);
 }
 
@@ -250,7 +230,7 @@ export function updateQuickItemCount(currentCount: number, quickItemCount: numbe
             elementPrefix = "quick-item";
             quickItemCycle.count = currentCount;
             // Shows equipment widget, given only the main quick item is changed
-            if (settings.uiDynamicVisibility && !pouch.isOpen)
+            if (settings.widgetDynamicVisibility && !pouch.isOpen)
                 startTimer(equipmentVisible);
             break;
         case 1:
@@ -267,11 +247,15 @@ export function updateQuickItemCount(currentCount: number, quickItemCount: numbe
 }
 
 export function updateQuickItemCounts(player: Actor | null) {
-    let count = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemId())) ?? 0;
+    // Runs the optimal potion widget updater function by default, but depending on its return value,
+    // the item count will update based on the specific Form in the quick item cycle.
+    if (!widget.updateOptimalPotionQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()))) {
+        let count = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemId())) ?? 0;
+        if (count !== quickItemCycle.count)
+            updateQuickItemCount(count, quickItemCycle.count, 0);
+    }
     let offsetOneCount = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemIdOffset(1))) ?? 0;
     let offsetTwoCount = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemIdOffset(2))) ?? 0;
-    if (count !== quickItemCycle.count)
-        updateQuickItemCount(count, quickItemCycle.count, 0);
     if (offsetOneCount !== quickItemCycle.offsetOneCount)
         updateQuickItemCount(offsetOneCount, quickItemCycle.offsetOneCount, 1);
     if (offsetTwoCount !== quickItemCycle.offsetTwoCount)
@@ -280,7 +264,7 @@ export function updateQuickItemCounts(player: Actor | null) {
 
 function updatePouchObject(pouch: Pouch) {
     // Checks for changes in the hotkey assignment
-    let hotkeyObject = Game.getHotkeyBoundObject(pouch.slot);
+    let hotkeyObject = Game.getHotkeyBoundObject(pouch.slot + settings.pouchOffset);
     let item = Game.getFormEx(pouch.itemID);
     if (hotkeyObject !== item) {
         pouch.itemID = hotkeyObject?.getFormID() ?? 0;
@@ -318,12 +302,12 @@ export function updateGoldCount(player: Actor | null) {
         return;
     widget.goldCountAnimation(currentCount - playerGold);
     playerGold = currentCount;
-    if (settings.uiDynamicVisibility)
+    if (settings.widgetDynamicVisibility)
         startTimer(goldVisible);
 }
 
 export function updateLHNameVisibility() {
-    if (!leftHandNameVisible.isEnabled || !settings.uiHandNameVisibility)
+    if (!leftHandNameVisible.isEnabled || settings.hideHandNames)
         return;
     if (leftHandNameVisible.startTime === -1) {
         widget.changeOpacity("left-hand-name", 0.2, 0, 1);
@@ -337,7 +321,7 @@ export function updateLHNameVisibility() {
     }
 }
 export function updateRHNameVisibility() {
-    if (!rightHandNameVisible.isEnabled || !settings.uiHandNameVisibility)
+    if (!rightHandNameVisible.isEnabled || settings.hideHandNames)
         return;
     if (rightHandNameVisible.startTime === -1) {
         widget.changeOpacity("right-hand-name", 0.2, 0, 1);
@@ -360,7 +344,7 @@ export function updateAmmoNameVisibility() {
     if (!ammoNameVisible.isEnabled)
         return;
     if (ammoNameVisible.startTime === -1) {
-        if (!settings.uiAmmoNameVisibility)
+        if (settings.hideAmmoName)
             return;
         widget.changeOpacity("ammo-name", 0.2, 0, 1);
         widget.changeOpacity("ammo", 0.2, 0, 0.5);
@@ -375,27 +359,30 @@ export function updateAmmoNameVisibility() {
     }
 }
 export function updateEquipmentUIVisibility() {
-    // Conditions where the UI should not fade in/out
-    if (!equipmentVisible.isEnabled || (playerInCombat && settings.uiDynamicVisibilityOnCombat))
+    // Conditions where the equipment widget should not fade in/out.
+    if (!equipmentVisible.isEnabled || (settings.widgetDVOnCombat && playerInCombat)) {
         return;
+    }
     if (equipmentVisible.startTime === -1) {
         widget.changeOpacity("equipment", 0.2, 0, 1);
+        equipmentVisible.isEnabled = true;
         equipmentVisible.startTime = currentTime;
         return;
     }
     // Cases that prevent the equipment widget from fading out.
-    if (editMode.isLoading || editMode.isLoadingComplete || editMode.isOpen)
+    if (cycleEditor.isLoading || cycleEditor.isLoadingComplete || cycleEditor.isOpen)
         return;
     if ((currentTime - equipmentVisible.startTime) > equipmentVisible.duration) {
-        equipmentVisible.isEnabled = false;
         widget.changeOpacity("equipment", 0.2, 0, 0);
+        equipmentVisible.isEnabled = false;
         return;
     }
 }
 export function updateGoldUIVisibility() {
-    // Conditions where the UI should not fade in/out
-    if (!goldVisible.isEnabled || (playerInCombat && settings.uiDynamicVisibilityOnCombat))
+    // Conditions where the gold widget should not fade in/out.
+    if (!goldVisible.isEnabled || (settings.widgetDVOnCombat && playerInCombat)) {
         return;
+    }
     if (goldVisible.startTime === -1) {
         widget.changeOpacity("player-gold", 0.2, 0, 1);
         goldVisible.startTime = currentTime;
@@ -407,24 +394,37 @@ export function updateGoldUIVisibility() {
         return;
     }
 }
-export function updateCombatUIOpacity(isInCombat: boolean) {
-    if (!settings.uiDynamicVisibility ||
-        !settings.uiDynamicVisibilityOnCombat ||
-        pouch.isOpen)
-    {
+function setDynamicVisibility(isVisible: boolean, delay: number) {
+    if (!settings.widgetDynamicVisibility || pouch.isOpen) {
         return;
     }
-    // Enters combat
-    if (isInCombat) {
-        widget.changeOpacity("equipment", 0.2, 0, 1);
-        widget.changeOpacity("player-gold", 0.2, 0, 1);
+    if (isVisible) {
+        widget.changeOpacity("equipment", 0.2, delay, 1);
+        widget.changeOpacity("player-gold", 0.2, delay, 1);
+        equipmentVisible.isEnabled = true;
+        goldVisible.isEnabled = true;
     }
-    // Exits combat
-    if (!isInCombat) {
-        widget.changeOpacity("equipment", 0.2, 5, 0);
-        widget.changeOpacity("player-gold", 0.2, 5, 0);
+    if (!isVisible) {
+        widget.changeOpacity("equipment", 0.2, delay, 0);
+        widget.changeOpacity("player-gold", 0.2, delay, 0);
+        equipmentVisible.isEnabled = false;
+        goldVisible.isEnabled = false;
     }
-    playerInCombat = isInCombat;
+}
+// Dynamic visibility events, particularly for the "show on combat" event.
+// A merged function to prevent conflicting logic with both events.
+export function dynamicVisibilityEvents(player: Actor | null) {
+    let currPlayerInCombat = player?.isInCombat() ?? false;
+    // "Show on combat" is enabled.
+    if (settings.widgetDVOnCombat) {
+        if (currPlayerInCombat && !playerInCombat) { // combat start.
+            setDynamicVisibility(true, 0);
+        }
+        if (!currPlayerInCombat && playerInCombat) { // combat end.
+            setDynamicVisibility(false, 5);
+        }
+    }
+    playerInCombat = currPlayerInCombat;
 }
 
 export let voice = { prevTime: 0, isRecovering: false };
@@ -436,7 +436,7 @@ export function updateShoutCooldown(player: Actor | null) {
         // currentShoutTime is floored since the animation parameter
         // seems to not accept float values
         widget.shoutFlashAnim(Math.floor(currentShoutTime));
-        if (settings.uiDynamicVisibility)
+        if (settings.widgetDynamicVisibility)
             startTimer(equipmentVisible);
     }
     if (voice.isRecovering && currentShoutTime === 0) {
@@ -451,19 +451,28 @@ export function updateElementOpacities() {
     updateLHNameVisibility();
     updateRHNameVisibility();
     updateAmmoNameVisibility();
-    if (!settings.uiDynamicVisibility)
+    if (!settings.widgetDynamicVisibility)
         return;
     updateEquipmentUIVisibility();
     updateGoldUIVisibility();
 }
 
-export function updateEditModeRemoveTimer() {
-    if (!editModeRemoveTimer.isEnabled)
+export function updateCycleEditorRemoveTimer() {
+    if (!cycleEditorRemoveTimer.isEnabled)
         return;
-    if (editModeRemoveTimer.startTime === -1)
-        editModeRemoveTimer.startTime = currentTime;
-    if ((currentTime - editModeRemoveTimer.startTime) > editModeRemoveTimer.duration) // 1 second
-        editModeRemoveTimer.isEnabled = false;
+    if (cycleEditorRemoveTimer.startTime === -1)
+        cycleEditorRemoveTimer.startTime = currentTime;
+    if ((currentTime - cycleEditorRemoveTimer.startTime) > cycleEditorRemoveTimer.duration) // 1 second
+        cycleEditorRemoveTimer.isEnabled = false;
+}
+
+export function updateExitMenuTimer() {
+    if (!exitMenuTimer.isEnabled)
+        return;
+    if (exitMenuTimer.startTime === -1)
+        exitMenuTimer.startTime = currentTime;
+    if ((currentTime - exitMenuTimer.startTime) > exitMenuTimer.duration) // 0.1 seconds
+        exitMenuTimer.isEnabled = false;
 }
 
 export function setPlayerDead(value: boolean) {
@@ -487,14 +496,14 @@ export function updateWidgetVisibility() {
 // ------------
 
 export function rightHandEquipEvent(currentRH: Form) {
-    if (editMode.isOpen) {
+    if (cycleEditor.isOpen) {
         // Unequips the automatically equipped pre-2H item. This occurs when the 2H weapon is unequipped.
-        // This allows two-handed items to be removed in edit mode.
+        // This allows two-handed items to be removed in cycle editor.
         if (currentRH === solveForm(consts.RIGHTHAND_ONEHANDED)) {
             utils.unequip(currentRH, 1);
             return;
         }
-        if (!editModeRemoveTimer.isEnabled)
+        if (!cycleEditorRemoveTimer.isEnabled)
             rightHandCycle.add(currentRH.getFormID());
     }
     // Updates variables and cycle
@@ -516,12 +525,12 @@ export function rightHandEquipEvent(currentRH: Form) {
     // Updates widget
     widget.updateEquippedItemWidget(1, currentRH);
     startTimer(rightHandNameVisible);
-    if (settings.uiDynamicVisibility && !pouch.isOpen)
+    if (settings.widgetDynamicVisibility && !pouch.isOpen)
         startTimer(equipmentVisible);
 
     // Updates visibility. Requires bow equipped.
     if (playerHoldingBow) {
-        if (settings.uiAmmoNameVisibility)
+        if (!settings.hideAmmoName)
             widget.changeOpacity("ammo", 0, 0, 0.5); // always sets to half opacity
         widget.setAmmoWidgetVisibility(true);
         startTimer(ammoNameVisible);
@@ -536,36 +545,36 @@ export function leftHandEquipEvent(currentLH: Form) {
         return;
     // Updates variables and cycle
     solveFormSetter(consts.LEFTHAND_RECENT, currentLH, true);
-    if (editMode.isOpen && !editModeRemoveTimer.isEnabled)
+    if (cycleEditor.isOpen && !cycleEditorRemoveTimer.isEnabled)
         leftHandCycle.add(currentLH.getFormID());
     leftHandCycle.autoIndex();
     // Updates left hand widget
     widget.updateEquippedItemWidget(0, currentLH);
     startTimer(leftHandNameVisible);
-    if (settings.uiDynamicVisibility && !pouch.isOpen)
+    if (settings.widgetDynamicVisibility && !pouch.isOpen)
         startTimer(equipmentVisible);
 }
 
 export function voiceEquipEvent(currentVoice: Form) {
     // Updates variables and cycle
     solveFormSetter(consts.VOICE_RECENT, currentVoice, true);
-    if (editMode.isOpen && !editModeRemoveTimer.isEnabled)
+    if (cycleEditor.isOpen && !cycleEditorRemoveTimer.isEnabled)
         voiceCycle.add(currentVoice.getFormID());
     voiceCycle.autoIndex();
     // Updates voice widget
     widget.updateEquippedItemWidget(2, currentVoice);
-    if (settings.uiDynamicVisibility && !pouch.isOpen)
+    if (settings.widgetDynamicVisibility && !pouch.isOpen)
         startTimer(equipmentVisible);
 }
 
 export function ammoEquipEvent(equipped: Form) {
-    if (settings.uiAmmoNameVisibility)
+    if (!settings.hideAmmoName)
         widget.changeOpacity("ammo", 0, 0, 0.5); // always sets to half opacity
     if (equipped === solveForm(consts.AMMO_RECENT))
         return;
     // Updates variables and cycle
     solveFormSetter(consts.AMMO_RECENT, equipped, true);
-    if (editMode.isOpen && !editModeRemoveTimer.isEnabled)
+    if (cycleEditor.isOpen && !cycleEditorRemoveTimer.isEnabled)
         ammoCycle.add(equipped.getFormID());
     ammoCycle.autoIndex();
     // Updates ammo widget.
@@ -574,32 +583,26 @@ export function ammoEquipEvent(equipped: Form) {
     if (!playerHoldingBow)
         return;
     startTimer(ammoNameVisible);
-    if (settings.uiDynamicVisibility && !pouch.isOpen)
+    if (settings.widgetDynamicVisibility && !pouch.isOpen)
         startTimer(equipmentVisible);
 }
 
 export function equipQuickItemEvent(equipped: Form) {
-    if (!editMode.isOpen)
+    if (!cycleEditor.isOpen)
         return;
     // Updates cycle
     let equippedType = equipped.getType();
-    // Prevents shields from being added
+    // Prevents shields from being added.
     if (equippedType === FormType.Armor && Armor.from(equipped)?.getSlotMask() === SlotMask.Shield)
         return;
     quickItemCycle.add(equipped.getFormID());
-    // Adds potion if equipped
-    let player = Game.getPlayer();
-    if (player?.getCombatState() === 0 && equippedType === FormType.Potion)
-        player?.addItem(equipped, 1, false);
-    // Updates quick item widget
-    widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
-        Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
-        Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+    // Updates quick item widget.
+    widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()), Game.getFormEx(quickItemCycle.getItemIdOffset(1)), Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
 }
 
 // A container change event for adding poisons to the quick item
 export function quickItemAddPoisonEvent(baseObj: Form) {
-    if (!editMode.isOpen)
+    if (!cycleEditor.isOpen)
         return;
     if (baseObj.getType() !== FormType.Potion)
         return;
@@ -625,38 +628,38 @@ export function rightHandUnequipEvent() {
     if (rightHandNameVisible.isEnabled)
         rightHandNameVisible.startTime = currentTime - (rightHandNameVisible.duration - 100);
     playerHoldingBow = false;
-    // Index remains stationary in Edit Mode
-    if (!editMode.isOpen)
+    // Index remains stationary in the cycle editor.
+    if (!cycleEditor.isOpen)
         rightHandCycle.index = rightHandCycle.arr.length;
     widget.updateEquippedItemWidget(1, null);
-    if (settings.uiDynamicVisibility && !pouch.isOpen)
+    if (settings.widgetDynamicVisibility && !pouch.isOpen)
         startTimer(equipmentVisible);
 }
 
 export function leftHandUnequipEvent() {
     solveFormSetter(consts.LEFTHAND_RECENT, null, true);
-    // Index remains stationary in Edit Mode
-    if (!editMode.isOpen)
+    // Index remains stationary in cycle editor.
+    if (!cycleEditor.isOpen)
         leftHandCycle.index = leftHandCycle.arr.length;
     widget.updateEquippedItemWidget(0, null);
-    if (settings.uiDynamicVisibility && !pouch.isOpen)
+    if (settings.widgetDynamicVisibility && !pouch.isOpen)
         startTimer(equipmentVisible);
 }
 
 export function voiceUnequipEvent() {
     solveFormSetter(consts.VOICE_RECENT, null, true);
-    // Index remains stationary in Edit Mode
-    if (!editMode.isOpen)
+    // Index remains stationary in cycle editor.
+    if (!cycleEditor.isOpen)
         voiceCycle.index = voiceCycle.arr.length;
     widget.updateEquippedItemWidget(2, null);
-    if (settings.uiDynamicVisibility && !pouch.isOpen)
+    if (settings.widgetDynamicVisibility && !pouch.isOpen)
         startTimer(equipmentVisible);
 }
 
 export function ammoUnequipEvent() {
     solveFormSetter(consts.AMMO_RECENT, null, true);
-    // Index remains stationary in Edit Mode
-    if (!editMode.isOpen)
+    // Index remains stationary in cycle editor.
+    if (!cycleEditor.isOpen)
         ammoCycle.index = ammoCycle.arr.length;
     // Updates ammo widget.
     widget.updateAmmoWidget();
@@ -665,7 +668,7 @@ export function ammoUnequipEvent() {
         return;
     // Overrides timer to finish sooner
     ammoNameVisible.startTime = currentTime - (ammoNameVisible.duration - 100);
-    if (settings.uiDynamicVisibility && !pouch.isOpen)
+    if (settings.widgetDynamicVisibility && !pouch.isOpen)
         startTimer(equipmentVisible);
 }
 
@@ -673,242 +676,434 @@ export function ammoUnequipEvent() {
 // Button events
 // -------------
 
-export function leftKeyEvent(device: number, isDown: boolean) {
-    if (device !== settings.leftKey.device || !isDown)
+function dualCast(hand: number): boolean {
+    let player = Game.getPlayer();
+    let handItem = player?.getEquippedObject(hand);
+    if (handItem?.getType() !== FormType.Spell) {
+        return false;
+    }
+    let otherHand = 0;
+    if (hand === 0) {
+        otherHand = 1;
+    }
+    let otherHandItem = player?.getEquippedObject(otherHand);
+    if (handItem === otherHandItem) {
+        return false;
+    }
+    utils.equip(handItem, otherHand);
+    return true;
+}
+
+export function leftKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
+    // --------------
+    // Guard clauses.
+    // --------------
+    if (device !== settings.leftKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete || !menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
-    if (editMode.isLoading || editMode.isLoadingComplete)
-        return;
-    if (!menuClosed || Ui.isMenuOpen("LootMenu"))
-        return;
-    if (editMode.isOpen) {
-        if (playerHoldingBow) {
-            ammoCycle.remove();
-            startTimer(editModeRemoveTimer);
+    }
+    // ------------------
+    // Left button press.
+    // ------------------
+    if (isDown) {
+        if (cycleEditor.isOpen) {
+            if (playerHoldingBow) {
+                ammoCycle.remove();
+                startTimer(cycleEditorRemoveTimer);
+                return;
+            }
+            if (playerHolding2H) {
+                return;
+            }
+            leftHandCycle.remove();
+            startTimer(cycleEditorRemoveTimer);
             return;
         }
-        if (playerHolding2H)
+        if (pouch.isOpen) {
+            leftPouch.use();
             return;
-        leftHandCycle.remove();
-        startTimer(editModeRemoveTimer);
+        }
+        if (playerHoldingBow) {
+            ammoCycle.advance();
+            return;
+        }
+        widget.flashAnim(2);
+        // LH cycling with LH dual casting disabled.
+        if (!settings.leftHandHoldDualCast) {
+            if (settings.widgetDynamicVisibility) {
+                startTimer(equipmentVisible);
+            }
+            if (playerHolding2H) {
+                startTimer(leftHandNameVisible);
+                return;
+            }
+            leftHandCycle.advance();
+            return;
+        }
+    }
+    if (cycleEditor.isOpen || pouch.isOpen) { // States that would not require isUp or isHeld.
         return;
     }
-    if (pouch.isOpen) {
-        leftPouch.use();
-        return;
+    // --------------------
+    // Left button release.
+    // --------------------
+    if (isUp) {
+        if (leftKeyHold.isActionCompleted) { // After finishing holding.
+            leftKeyHold.isActionCompleted = false;
+            return;
+        }
+        // LH cycling with LH dual casting enabled.
+        if (settings.leftHandHoldDualCast && !playerHoldingBow) {
+            if (settings.widgetDynamicVisibility) {
+                startTimer(equipmentVisible);
+            }
+            if (playerHolding2H) {
+                startTimer(leftHandNameVisible);
+                return;
+            }
+            leftHandCycle.advance();
+            return;
+        }
     }
-    if (playerHoldingBow) { // cycles ammo
-        ammoCycle.advance();
-        return;
+    // -----------------
+    // Left button hold.
+    // -----------------
+    if (isHeld) {
+        if (leftKeyHold.isActionCompleted) { // Holding in-progress.
+            return;
+        }
+        // Dual cast hold time.
+        if (settings.leftHandHoldDualCast && heldDuration >= settings.dualCastHoldTime - 0.1 && heldDuration <= settings.dualCastHoldTime + 0.1) {
+            // Hold dual cast. Returns true if a successful dual cast is completed.
+            if (dualCast(0)) {
+                leftKeyHold.isActionCompleted = true;
+                return;
+            }
+        }
+        // Reset cycle hold time.
+        if (heldDuration >= settings.cycleButtonHoldTime - 0.1 && heldDuration <= settings.cycleButtonHoldTime + 0.1) {
+            if (playerHoldingBow && settings.ammoCycleHoldReset) { // Resets ammo cycle, if holding a bow.
+                ammoCycle.resetIndex();
+            }
+            if (!playerHolding2H && settings.leftHandCycleHoldReset) { // Resets left hand cycle.
+                if (leftHandCycle.resetIndex()) {
+                    widget.flashRedAnim(2);
+                }
+            }
+            leftKeyHold.isActionCompleted = true;
+            return;
+        }
     }
-    widget.flashAnim(2);
-    // Allows visibility even when unequipped
-    if (settings.uiDynamicVisibility)
-        startTimer(equipmentVisible);
-    // Prevents left hand cycling while holding two-handed weapon
-    if (playerHolding2H) {
-        startTimer(leftHandNameVisible);
-        return;
-    }
-    leftHandCycle.advance();
 }
 
-export function rightKeyEvent(device: number, isDown: boolean) {
-    if (device !== settings.rightKey.device || !isDown)
-        return;
-    if (editMode.isLoading || editMode.isLoadingComplete)
-        return;
-    if (!menuClosed || Ui.isMenuOpen("LootMenu"))
-        return;
-    if (editMode.isOpen) {
-        rightHandCycle.remove();
-        startTimer(editModeRemoveTimer);
+export function rightKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
+    // --------------
+    // Guard clauses.
+    // --------------
+    if (device !== settings.rightKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete || !menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
-    if (pouch.isOpen) {
-        rightPouch.use();
+    // -------------------
+    // Right button press.
+    // -------------------
+    if (isDown) {
+        if (cycleEditor.isOpen) {
+            rightHandCycle.remove();
+            startTimer(cycleEditorRemoveTimer);
+            return;
+        }
+        if (pouch.isOpen) {
+            rightPouch.use();
+            return;
+        }
+        widget.flashAnim(3);
+        // LH cycling with LH dual casting disabled.
+        if (!settings.rightHandHoldDualCast) {
+            if (settings.widgetDynamicVisibility) {
+                startTimer(equipmentVisible);
+            }
+            rightHandCycle.advance();
+            return;
+        }
+    }
+    if (cycleEditor.isOpen || pouch.isOpen) { // States that would not require isUp or isHeld.
         return;
     }
-    rightHandCycle.advance();
-    widget.flashAnim(3);
-    // Allows visibility even when unequipped
-    if (settings.uiDynamicVisibility)
-        startTimer(equipmentVisible);
+    // ---------------------
+    // Right button release.
+    // ---------------------
+    if (isUp) {
+        if (rightKeyHold.isActionCompleted) { // After finishing holding.
+            rightKeyHold.isActionCompleted = false;
+            return;
+        }
+        // RH cycling with RH dual casting enabled.
+        if (settings.rightHandHoldDualCast) {
+            if (settings.widgetDynamicVisibility) {
+                startTimer(equipmentVisible);
+            }
+            rightHandCycle.advance();
+            return;
+        }
+    }
+    // ------------------
+    // Right button hold.
+    // ------------------
+    if (isHeld) {
+        if (rightKeyHold.isActionCompleted) { // Holding in-progress.
+            return;
+        }
+        // Dual cast hold time.
+        if (settings.rightHandHoldDualCast && heldDuration >= settings.dualCastHoldTime - 0.1 && heldDuration <= settings.dualCastHoldTime + 0.1) {
+            // Hold dual cast. Returns true if a successful dual cast is completed.
+            if (dualCast(1)) {
+                rightKeyHold.isActionCompleted = true;
+                return;
+            }
+        }
+        // Reset cycle hold time.
+        if (settings.rightHandCycleHoldReset && heldDuration >= settings.cycleButtonHoldTime - 0.1 && heldDuration <= settings.cycleButtonHoldTime + 0.1) {
+            if (rightHandCycle.resetIndex()) {
+                widget.flashRedAnim(3);
+            }
+            rightKeyHold.isActionCompleted = true;
+            return;
+        }
+    }
 }
 
-export function upKeyEvent(device: number, isDown: boolean) {
-    if (device !== settings.upKey.device || !isDown)
-        return;
-    if (editMode.isLoading || editMode.isLoadingComplete)
-        return;
-    if (!menuClosed || Ui.isMenuOpen("LootMenu"))
-        return;
-    if (editMode.isOpen) {
-        voiceCycle.remove();
-        startTimer(editModeRemoveTimer);
+export function upKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
+    // --------------
+    // Guard clauses.
+    // --------------
+    if (device !== settings.upKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete || !menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
-    if (pouch.isOpen) {
-        upPouch.use();
-        return;
-    }
-    widget.flashAnim(0);
-    if (settings.uiDynamicVisibility) {
-        let prevVisible = equipmentVisible.isEnabled;
-        startTimer(equipmentVisible);
-        if (!prevVisible)
+    // ----------------
+    // Up button press.
+    // ----------------
+    if (isDown) {
+        if (cycleEditor.isOpen) {
+            voiceCycle.remove();
+            startTimer(cycleEditorRemoveTimer);
             return;
-    }
-    voiceCycle.advance();
-}
-
-// To save some lines of code here.
-function advanceQuickItemCycle() {
-    if (editMode.isOpen) {
-        quickItemCycle.remove();
-        widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
-            Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
-            Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
-        return;
-    }
-    if (pouch.isOpen) {
-        downPouch.use();
-        return;
-    }
-    if (settings.uiDynamicVisibility) {
-        let prevVisible = equipmentVisible.isEnabled;
-        startTimer(equipmentVisible);
-        if (!prevVisible)
+        }
+        if (pouch.isOpen) {
+            upPouch.use();
             return;
+        }
+        widget.flashAnim(0);
+        if (settings.widgetDynamicVisibility) {
+            let prevVisible = equipmentVisible.isEnabled;
+            startTimer(equipmentVisible);
+            if (!prevVisible) {
+                return;
+            }
+        }
+        voiceCycle.advance();
+        return;
     }
-    widget.flashAnim(1);
-    quickItemCycle.advance();
-    widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
-        Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
-        Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+    // States that would not require isUp or isHeld.
+    if (cycleEditor.isOpen || pouch.isOpen) {
+        return;
+    }
+    // ------------------
+    // Up button release.
+    // ------------------
+    if (isUp) {
+        if (upKeyHold.isActionCompleted) { // After finishing holding.
+            upKeyHold.isActionCompleted = false;
+            return;
+        }
+    }
+    // ---------------
+    // Up button hold.
+    // ---------------
+    if (isHeld) {
+        if (!upKeyHold.isActionCompleted && settings.voiceCycleHoldReset) {
+            // Reset cycle hold time.
+            if (heldDuration >= settings.cycleButtonHoldTime - 0.1 && heldDuration <= settings.cycleButtonHoldTime + 0.1) {
+                if (voiceCycle.resetIndex()) {
+                    widget.flashRedAnim(0);
+                }
+                upKeyHold.isActionCompleted = true;
+                return;
+            }
+        }
+    }
 }
 
 export function downKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
-    if (device !== settings.downKey.device)
-        return;
-    if (editMode.isLoading || editMode.isLoadingComplete)
-        return;
-    if (!menuClosed || Ui.isMenuOpen("LootMenu"))
-        return;
-    if (isDown) {
-        if (settings.useQuickItemByHoldingDownButton)
-            return;
-        advanceQuickItemCycle();
+    // --------------
+    // Guard clauses.
+    // --------------
+    if (device !== settings.downKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete || !menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
+    // ------------------
+    // Down button press.
+    // ------------------
+    if (isDown) {
+        if (cycleEditor.isOpen) {
+            quickItemCycle.remove();
+            widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()), Game.getFormEx(quickItemCycle.getItemIdOffset(1)), Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+            return;
+        }
+        if (pouch.isOpen) {
+            downPouch.use();
+            return;
+        }
+        widget.flashAnim(1);
+        if (!settings.useQuickItemAlt) { // Alternate quick item use button is disabled.
+            if (settings.widgetDynamicVisibility) {
+                let prevVisible = equipmentVisible.isEnabled;
+                startTimer(equipmentVisible);
+                if (!prevVisible){
+                    return;
+                }
+            }
+            quickItemCycle.advance();
+            widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()), Game.getFormEx(quickItemCycle.getItemIdOffset(1)), Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+        }
+        return;
+    }
+    // States that would not require isUp or isHeld.
+    if (cycleEditor.isOpen || pouch.isOpen) {
+        return;
+    }
+    // --------------------
+    // Down button release.
+    // --------------------
     if (isUp) {
+        // This allows an action when held to be played only once.
         if (downKeyHold.isActionCompleted) {
             downKeyHold.isActionCompleted = false;
             return;
         }
-        if (!settings.useQuickItemByHoldingDownButton)
-            return;
-        advanceQuickItemCycle();
-        return;
-    }
-    if (isHeld) {
-        if (heldDuration < settings.downKeyHoldTime - 0.1 ||
-            heldDuration > settings.downKeyHoldTime + 0.1 ||
-            Ui.isMenuOpen("LootMenu")) {
-                return;
+        if (settings.useQuickItemAlt) { // Alternate quick item use button is enabled.
+            if (settings.widgetDynamicVisibility) {
+                let prevVisible = equipmentVisible.isEnabled;
+                startTimer(equipmentVisible);
+                if (!prevVisible){
+                    return;
+                }
+            }
+            quickItemCycle.advance();
+            widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()), Game.getFormEx(quickItemCycle.getItemIdOffset(1)), Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
         }
-        // Prevents the desired action from being run again.
+    }
+    // -----------------
+    // Down button hold.
+    // -----------------
+    if (isHeld) {
         if (downKeyHold.isActionCompleted) {
             return;
         }
-        if (editMode.isLoading || editMode.isLoadingComplete ||
-            editMode.isOpen || pouch.isOpen) {
-                return;
+        if (heldDuration >= settings.cycleButtonHoldTime - 0.1 && heldDuration <= settings.cycleButtonHoldTime + 0.1) {
+            if (settings.widgetDynamicVisibility) {
+                startTimer(equipmentVisible);
+            }
+            if (settings.useQuickItemAlt) { // Alt quick item use.
+                quickItemCycle.use();
+            }
+            else { // Quick item index reset.
+                if (quickItemCycle.resetIndex()) {
+                    widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()), Game.getFormEx(quickItemCycle.getItemIdOffset(1)), Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
+                    widget.flashRedAnim(1);
+                }
+            }
+            downKeyHold.isActionCompleted = true;
         }
-        if (settings.uiDynamicVisibility && !pouch.isOpen)
-            startTimer(equipmentVisible);
-        // Quick item use.
-        if (settings.useQuickItemByHoldingDownButton) {
-            quickItemCycle.use();
-        }
-        // Quick item index reset.
-        else {
-            if (!quickItemCycle.resetIndex())
-                return;
-            widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()),
-                Game.getFormEx(quickItemCycle.getItemIdOffset(1)),
-                Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
-            widget.flashRedAnim();
-        }
-        downKeyHold.isActionCompleted = true;
     }
 }
 
 export function activateKeyEvent(isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
+    // ----------------------
+    // Activate button press.
+    // ----------------------
     if (isDown) {
-        if (Game.getCurrentCrosshairRef() || !menuClosed || pouch.isOpen)
+        if (Game.getCurrentCrosshairRef() || !menuClosed || pouch.isOpen) {
             return;
-        startTimer(leftHandNameVisible);
-        // Confirms that the right hand name can be displayed
-        if (solveForm(consts.RIGHTHAND_RECENT))
-            startTimer(rightHandNameVisible);
-        // Confirms that the ammo name can be displayed
-        if (playerHoldingBow)
-            startTimer(ammoNameVisible);
-        if (!settings.uiDynamicVisibilityOnActivate)
+        }
+        if (!settings.widgetDVOnActivate) { // Dynamic visibility on activate disabled.
             return;
+        }
         startTimer(equipmentVisible);
         startTimer(goldVisible);
         return;
     }
+    // ------------------------
+    // Activate button release.
+    // ------------------------
     if (isUp) {
-        if (!pouch.isOpen)
-            return;
-        pouch.isOpen = false;
-        widget.changeOpacity("pouch", 0.2, 0, 0);
-        // Dynamic visibility is enabled and showOnActivateButtonPress is disabled
-        if (settings.uiDynamicVisibility && !settings.uiDynamicVisibilityOnActivate) {
-            // Does not show equipment depending on combat state and settings
-            if ((settings.uiDynamicVisibilityOnCombat && !playerInCombat) || !settings.uiDynamicVisibilityOnCombat)
+        // Exits pouch.
+        if (pouch.isOpen) {
+            pouch.isOpen = false;
+            widget.changeOpacity("pouch", 0.2, 0, 0);
+            // Dynamic visibility is enabled and showOnActivateButtonPress is disabled.
+            if (settings.widgetDynamicVisibility && !settings.widgetDVOnActivate) {
+                // Does not show equipment depending on combat state and settings.
+                if ((settings.widgetDVOnCombat && !playerInCombat) || !settings.widgetDVOnCombat) {
+                    return;
+                }
+            }
+            widget.changeOpacity("equipment", 0.1, 0, 1);
+            equipmentVisible.isEnabled = true;
+            if (settings.widgetDVOnActivate && settings.widgetDynamicVisibility) {
+                startTimer(equipmentVisible);
+            }
+        } else {
+            // Shows names.
+            if (Game.getCurrentCrosshairRef()) {
                 return;
+            }
+            startTimer(leftHandNameVisible);
+            if (solveForm(consts.RIGHTHAND_RECENT)) { // Confirms that the right hand name can be displayed.
+                startTimer(rightHandNameVisible);
+            }
+            if (playerHoldingBow) { // Confirms that the ammo name can be displayed.
+                startTimer(ammoNameVisible);
+            }
         }
-        widget.changeOpacity("equipment", 0.1, 0, 1);
-        if (!settings.uiDynamicVisibilityOnActivate)
-            return;
-        if (settings.uiDynamicVisibility)
-            startTimer(equipmentVisible);
         return;
     }
+    // ---------------------
+    // Activate button hold.
+    // ---------------------
     if (isHeld) {
-        if (heldDuration < settings.pouchAccessHoldTime - 0.1 ||
-            heldDuration > settings.pouchAccessHoldTime + 0.1 ||
-            editMode.isOpen || Game.getCurrentCrosshairRef())
+        if (cycleEditor.isOpen || Game.getCurrentCrosshairRef()) {
             return;
-        widget.changeOpacity("equipment", 0.2, 0, 0);
-        widget.changeOpacity("pouch", 0.1, 0, 1);
-        pouch.isOpen = true;
+        }
+        if (heldDuration >= settings.pouchAccessHoldTime - 0.1 && heldDuration <= settings.pouchAccessHoldTime + 0.1) {
+            widget.changeOpacity("equipment", 0.2, 0, 0);
+            equipmentVisible.isEnabled = false;
+            widget.changeOpacity("pouch", 0.1, 0, 1);
+            pouch.isOpen = true;
+        }
     }
 }
 
-export function openEditMode() {
-    if (settings.editModeNotification) {
-        Debug.notification(`Opened Edit Mode.`);
+export function openCycleEditor() {
+    if (settings.cycleEditorMessages) {
+        Debug.notification(`Cycle editor opened.`);
     }
-    if (settings.uiDynamicVisibility)
+    if (settings.widgetDynamicVisibility) {
         widget.changeOpacity("equipment", 0, 0, 1);
-    widget.changeSource("left-hand-frame", consts.FRAME_EDIT_MODE_IMAGE);
-    widget.changeSource("right-hand-frame", consts.FRAME_EDIT_MODE_IMAGE);
-    widget.changeSource("voice-frame", consts.FRAME_EDIT_MODE_IMAGE);
-    widget.changeSource("ammo-frame", consts.FRAME_EDIT_MODE_IMAGE);
-    widget.changeSource("quick-item-frame", consts.FRAME_EDIT_MODE_IMAGE);
-    widget.changeSource("quick-item-offset-1-frame", consts.FRAME_EDIT_MODE_IMAGE);
-    widget.changeSource("quick-item-offset-2-frame", consts.FRAME_EDIT_MODE_IMAGE);
-    editMode.isLoading = false;
-    editMode.isLoadingComplete = true;
+        equipmentVisible.isEnabled = true;
+    }
+    widget.changeSource("left-hand-frame", consts.FRAME_CYCLE_EDITOR_IMAGE);
+    widget.changeSource("right-hand-frame", consts.FRAME_CYCLE_EDITOR_IMAGE);
+    widget.changeSource("voice-frame", consts.FRAME_CYCLE_EDITOR_IMAGE);
+    widget.changeSource("ammo-frame", consts.FRAME_CYCLE_EDITOR_IMAGE);
+    widget.changeSource("quick-item-frame", consts.FRAME_CYCLE_EDITOR_IMAGE);
+    widget.changeSource("quick-item-offset-1-frame", consts.FRAME_CYCLE_EDITOR_IMAGE);
+    widget.changeSource("quick-item-offset-2-frame", consts.FRAME_CYCLE_EDITOR_IMAGE);
+    cycleEditor.isLoading = false;
+    cycleEditor.isLoadingComplete = true;
 }
 
-export function closeEditMode() {
-    if (settings.editModeNotification) {
-        Debug.notification(`Closed Edit Mode.`);
+export function closeCycleEditor() {
+    if (settings.cycleEditorMessages) {
+        Debug.notification(`Cycle editor closed.`);
     }
     // Updates JContainers
     utils.writeObjArrToJCon(voiceCycle.arr, consts.VOICE_ARRAY);
@@ -924,31 +1119,28 @@ export function closeEditMode() {
     widget.changeSource("quick-item-frame", consts.FRAME_EQUIPMENT_POUCH_IMAGE);
     widget.changeSource("quick-item-offset-1-frame", consts.FRAME_EQUIPMENT_POUCH_IMAGE);
     widget.changeSource("quick-item-offset-2-frame", consts.FRAME_EQUIPMENT_POUCH_IMAGE);
-    editMode.isOpen = false;
-    if (settings.uiDynamicVisibility)
+    cycleEditor.isOpen = false;
+    if (settings.widgetDynamicVisibility)
         startTimer(equipmentVisible);
 }
 
-// Includes edit mode key by if the separateEditKey setting is set to false.
-// Makes it easier for gamepad users to not switch back and forth between
-// either gamepad or keyboard and mouse.
 export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean) {
     if (device !== settings.itemUseKey.device)
         return;
-    if (settings.useQuickItemByHoldingDownButton || !menuClosed || Ui.isMenuOpen("LootMenu"))
+    if (settings.useQuickItemAlt || !menuClosed || Ui.isMenuOpen("LootMenu"))
         return;
     if (isDown) {
-        if (editMode.isLoading || editMode.isLoadingComplete || editMode.isOpen)
+        if (cycleEditor.isLoading || cycleEditor.isLoadingComplete || cycleEditor.isOpen)
             return;
-        if (!settings.uiDynamicVisibility)
+        if (!settings.widgetDynamicVisibility)
             return;
         startTimer(equipmentVisible);
         return;
     }
     if (isUp) {
-        // Quick item use
-        if (!editMode.isLoading && !editMode.isLoadingComplete && !editMode.isOpen) {
-            if (settings.uiDynamicVisibility && !pouch.isOpen)
+        // Quick item use.
+        if (!cycleEditor.isLoading && !cycleEditor.isLoadingComplete && !cycleEditor.isOpen) {
+            if (settings.widgetDynamicVisibility && !pouch.isOpen)
                 startTimer(equipmentVisible);
             quickItemCycle.use();
             return;
@@ -956,15 +1148,15 @@ export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean) 
     }
 }
 
-export function editModeKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
-    if (device !== settings.editModeKey.device)
+export function cycleEditorKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
+    if (device !== settings.cycleEditorKey.device)
         return;
     if (!menuClosed || Ui.isMenuOpen("LootMenu"))
         return;
     if (isDown) {
-        if (editMode.isLoading || editMode.isLoadingComplete || editMode.isOpen)
+        if (cycleEditor.isLoading || cycleEditor.isLoadingComplete || cycleEditor.isOpen)
             return;
-        if (!settings.uiDynamicVisibility)
+        if (!settings.widgetDynamicVisibility)
             return;
         startTimer(equipmentVisible);
         return;
@@ -972,30 +1164,30 @@ export function editModeKeyEvent(device: number, isDown: boolean, isUp: boolean,
     if (isUp) {
         if (pouch.isOpen)
             return;
-        // Cancel edit mode load
-        if (editMode.isLoading && !editMode.isOpen) {
-            editMode.isLoading = false;
-            if (settings.uiDynamicVisibility)
+        // Cancel cycle editor load
+        if (cycleEditor.isLoading && !cycleEditor.isOpen) {
+            cycleEditor.isLoading = false;
+            if (settings.widgetDynamicVisibility)
                 startTimer(equipmentVisible);
             return;
         }
-        // Initial key release after loading edit mode
-        if (!editMode.isOpen && editMode.isLoadingComplete) {
-            editMode.isLoadingComplete = false;
-            editMode.isOpen = true;
+        // Initial key release after loading cycle editor
+        if (!cycleEditor.isOpen && cycleEditor.isLoadingComplete) {
+            cycleEditor.isLoadingComplete = false;
+            cycleEditor.isOpen = true;
             return;
         }
-        if (editMode.isOpen && !editMode.isLoadingComplete) {
-            closeEditMode();
+        if (cycleEditor.isOpen && !cycleEditor.isLoadingComplete) {
+            closeCycleEditor();
             return;
         }
         return;
     }
     if (isHeld) {
-        // Load edit mode
-        if (heldDuration < settings.editModeHoldTime || pouch.isOpen || editMode.isOpen)
+        // Load cycle editor
+        if (heldDuration < settings.cycleEditorHoldTime || pouch.isOpen || cycleEditor.isOpen)
             return;
-        openEditMode();
+        openCycleEditor();
         return;
     }
 }

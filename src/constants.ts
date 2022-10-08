@@ -20,12 +20,13 @@ export const RESTORE_STAMINA_FOOD_ID = 0xf33cc;
 export const MOD_NAME = "Elden Equip";
 export const MOD_KEY = "elden-equip";
 export const UI_PATH = "file:///Data/Platform/UI/elden-equip-ui.html"
+export const UI_INIT_TIME = 1;
 
 // SVG file paths
 export const FLASH_IMAGE = "images/flash.svg";
 export const FLASH_ALT_IMAGE = "images/flash_alt.svg";
 export const FLASH_RED_IMAGE = "images/flash_red.svg";
-export const FRAME_EDIT_MODE_IMAGE = "images/frame_edit_mode.svg";
+export const FRAME_CYCLE_EDITOR_IMAGE = "images/frame_cycle_editor.svg";
 export const FRAME_EQUIPMENT_POUCH_IMAGE = "images/frame_equipment_pouch.svg";
 export const FRAME_GOLD_IMAGE = "images/frame_gold.svg";
 // Ammo

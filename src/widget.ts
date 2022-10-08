@@ -1,4 +1,4 @@
-import { Ammo, Armor, browser, Game, Form, FormType, MagicEffect, Potion, SlotMask, Spell, Ui, Utility, Weapon, WeaponType, printConsole } from "@skyrim-platform/skyrim-platform";
+import { Ammo, Armor, browser, Game, Form, FormType, MagicEffect, Potion, SlotMask, Spell, Ui, Utility, Weapon, WeaponType } from "@skyrim-platform/skyrim-platform";
 import { solveForm } from "@skyrim-platform/jcontainers/JDB";
 import * as settings from "./settings";
 import * as utils from "./utilities";
@@ -8,12 +8,12 @@ export function isMenuClosed(): boolean {
     return !Utility.isInMenuMode() && (!Ui.isMenuOpen("Crafting Menu") && !Ui.isMenuOpen("Fader Menu") && !Ui.isMenuOpen("Dialogue Menu") || (Ui.isMenuOpen("LootMenu")));
 }
 
-// ---------------------------------------
-// Simplified JavaScript browser functions
-// ---------------------------------------
+// ----------------------------------------
+// Simplified JavaScript browser functions.
+// ----------------------------------------
 
 export function changeOpacity(element: string, time: number, delay: number, opacity: number) {
-    if (!settings.uiOpacityTransitions)
+    if (settings.widgetDisableOpacityTransitions)
         time = 0;
     browser.executeJavaScript(`document.getElementById("${element}").style.transition = "opacity ${time}s";`);
     browser.executeJavaScript(`document.getElementById("${element}").style.transitionDelay = "${delay}s";`);
@@ -67,20 +67,20 @@ export function fadeInOut(element: string, time: number, steps: number) {
 
 // Sets the position based on screen's width and height percentage
 export function initWidgetPosition() {
-    changeLeft("equipment", settings.uiEquipmentPosition_X);
-    changeBottom("equipment", settings.uiEquipmentPosition_Y);
+    changeLeft("equipment", settings.widgetEquipmentX);
+    changeBottom("equipment", settings.widgetEquipmentY);
 
-    changeLeft("pouch", settings.uiEquipmentPosition_X);
-    changeBottom("pouch", settings.uiEquipmentPosition_Y);
+    changeLeft("pouch", settings.widgetEquipmentX);
+    changeBottom("pouch", settings.widgetEquipmentY);
 
-    changeRight("player-gold", settings.uiGoldPosition_X);
-    changeBottom("player-gold", settings.uiGoldPosition_Y);
+    changeRight("player-gold", settings.widgetGoldX);
+    changeBottom("player-gold", settings.widgetGoldY);
 }
 
 export function initWidgetScale() {
-    changeScale("equipment", settings.uiEquipmentScaleMult);
-    changeScale("pouch", settings.uiEquipmentScaleMult);
-    changeScale("player-gold", settings.uiGoldScaleMult);
+    changeScale("equipment", settings.widgetEquipmentScale);
+    changeScale("pouch", settings.widgetEquipmentScale);
+    changeScale("player-gold", settings.widgetGoldScale);
 }
 
 // --------------------
@@ -91,12 +91,12 @@ function updateIconSpell(item: Form, iconElement: string) {
     let spell = Spell.from(item);
     let effect = MagicEffect.from(spell?.getNthEffectMagicEffect(0) ?? null);
     let effectResistance = effect?.getResistance();
-    // Since voice spells do not take up any magicka
+    // Since voice spells do not take up any magicka.
     if (spell?.getMagickaCost() === 0) {
         changeSource(iconElement, consts.VOICE_POWER_ICON);
         return;
     }
-    // LH/RH magic spells
+    // LH/RH magic spells.
     utils.getSpellSchool(spell).then(function(result) {
         switch (result) {
             case "Alteration":
@@ -190,10 +190,8 @@ function updateIconArmor(item: Form, iconElement: string) {
         case SlotMask.Circlet:
             changeSource(iconElement, consts.ARMOR_CIRCLET_ICON);
             break;
-        case 0x80000: // several SlotMask values use this
-            changeSource(iconElement, consts.ARMOR_ICON);
         default:
-            break;
+            changeSource(iconElement, consts.ARMOR_ICON);
     }
 }
 
@@ -330,7 +328,7 @@ function updateIconPotion(item: Form, iconElement: string) {
 }
 
 function updateIcon(item: Form | null, iconElement: string) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
     // Resets secondary icon
     changeSource(`${iconElement}-secondary`, "");
@@ -365,6 +363,24 @@ function updateIcon(item: Form | null, iconElement: string) {
 }
 
 function updateIconOpacity(item: Form | null, iconElement: string) {
+    // Special case for quick item icons (including offset icons) to have
+    // the optimal potion icon opacities be changed.
+    if (item?.getType() === FormType.Potion &&
+        (iconElement === "quick-item-icon" || iconElement === "quick-item-offset-1-icon" || iconElement === "quick-item-offset-2-icon"))
+    {
+        let potion = Potion.from(item);
+        let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID() ?? 0;
+        if ((potionType === consts.RESTORE_HEALTH_ID && settings.useOptimalHealthPotion) ||
+            (potionType === consts.RESTORE_MAGICKA_ID && settings.useOptimalMagickaPotion) ||
+            (potionType === consts.RESTORE_STAMINA_ID && settings.useOptimalStaminaPotion))
+        {
+            let potionTypeCount = getTotalPotionTypeCount(potionType);
+            if (potionTypeCount > 0) {
+                changeOpacity(iconElement, 0, 0, 1);
+                return;
+            }
+        }
+    }
     if (utils.hasItem(item)) {
         changeOpacity(iconElement, 0, 0, 1);
         return;
@@ -373,7 +389,7 @@ function updateIconOpacity(item: Form | null, iconElement: string) {
 }
 
 export function updateItemCount(countElement: string, iconElement: string, item: Form | null) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
     updateIconOpacity(item, iconElement);
     let itemType = item?.getType();
@@ -405,7 +421,7 @@ function updateLeftHandIconOpacity(currentRH: Form | null) {
 
 // Updates icon and name of specified slot, given a Form object (i.e. equipped item)
 export function updateEquippedItemWidget(slot: number, item: Form | null) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
     let elementPrefix: string;
     switch (slot) {
@@ -426,13 +442,69 @@ export function updateEquippedItemWidget(slot: number, item: Form | null) {
     changeTextContent(`${elementPrefix}-name`, item?.getName() ?? "");
 }
 
+// Used for optimal restoration potions option.
+// Could be moved to utils.ts instead.
+function getTotalPotionTypeCount(potionTypeID: number): number {
+    let player = Game.getPlayer();
+    let playerNumItems = player?.getNumItems() ?? 0;
+    let potionTypeCount = 0;
+    for (let i = 0; i < playerNumItems; i++) {
+        let item = player?.getNthForm(i);
+        // Item is not a potion.
+        if (item?.getType() !== FormType.Potion)
+            continue;
+        let potion = Potion.from(item);
+        let type = potion?.getNthEffectMagicEffect(0)?.getFormID();
+        // Item does not match the type.
+        if (potionTypeID !== type)
+            continue;
+        potionTypeCount += player?.getItemCount(potion) ?? 0;
+    }
+    return potionTypeCount;
+}
+
+// - This is to be used with the optimal restoration potions option.
+// - Updates the name to be "Potion (Health/Magicka/Stamina) Restoration"
+//   and the count to be the total count of restoration potions of that type.
+// - The return type determines whether or not to use the Form name/count.
+//   For instance, true would indicate not to update.
+export function updateOptimalPotionQuickItemWidget(item: Form | null): boolean {
+    updateIconOpacity(item, "quick-item-icon");
+    let potion = Potion.from(item);
+    let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID(); // Health/magicka/stamina restoration potion.
+    // Cases to update the quick item widget, depending on the potion type.
+    if (potionType === consts.RESTORE_HEALTH_ID && settings.useOptimalHealthPotion) {
+        changeTextContent("quick-item-name", "Potion of Health Restoration");
+        let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_HEALTH_ID);
+        changeTextContent("quick-item-count", potionTypeCount.toString());
+        return true;
+    }
+    if (potionType === consts.RESTORE_MAGICKA_ID && settings.useOptimalMagickaPotion) {
+        changeTextContent("quick-item-name", "Potion of Magicka Restoration");
+        let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_MAGICKA_ID);
+        changeTextContent("quick-item-count", potionTypeCount.toString());
+        return true;
+    }
+    if (potionType === consts.RESTORE_STAMINA_ID && settings.useOptimalStaminaPotion) {
+        changeTextContent("quick-item-name", "Potion of Stamina Restoration");
+        let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_STAMINA_ID);
+        changeTextContent("quick-item-count", potionTypeCount.toString());
+        return true;
+    }
+    return false;
+}
+
 // Updates icon and name of the quick item widget, given Form objects (i.e. quick items)
 export function updateQuickItemWidget(item: Form | null, firstNextItem: Form | null, secondNextItem: Form | null) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
-    changeTextContent("quick-item-name", item?.getName() ?? "");
-    updateItemCount("quick-item-count", "quick-item-icon", item);
+    // Keeps optimal restoration potions and regular Form objects separate.
+    if (!updateOptimalPotionQuickItemWidget(item)) {
+        changeTextContent("quick-item-name", item?.getName() ?? "");
+        updateItemCount("quick-item-count", "quick-item-icon", item);
+    }
     updateIcon(item, "quick-item-icon");
+    updateIconOpacity(item, "quick-item-icon");
     if (!firstNextItem) {
         changeVisibility("quick-item-offset-1", false);
         changeVisibility("quick-item-offset-2", false);
@@ -452,7 +524,7 @@ export function updateQuickItemWidget(item: Form | null, firstNextItem: Form | n
 
 // Updates icons and names of all elements in the pouch widget, given an index
 export function updatePouchWidget(item: Form | null, pouchIndex: number) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
     let elementPrefix = "";
     switch (pouchIndex) {
@@ -497,9 +569,9 @@ export async function updateAmmoWidget() {
 }
 
 export function flashAnim(element: number) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
-    if (!settings.uiFlashFeedback)
+    if (settings.widgetDisableFlashFeedback)
         return;
     let id = "";
     if (element === 0)
@@ -513,16 +585,25 @@ export function flashAnim(element: number) {
     fadeOut(id, 0.1, 2);
 }
 
-export function flashRedAnim() {
-    if (!settings.uiVisible)
+export function flashRedAnim(element: number) {
+    if (settings.hideWidgets)
         return;
-    if (!settings.uiFlashFeedback)
+    if (settings.widgetDisableFlashFeedback)
         return;
-    fadeOut("quick-item-flash-red", 0.6, 12);
+    let id = "";
+    if (element === 0)
+        id = "voice-flash-red";
+    if (element === 1)
+        id = "quick-item-flash-red";
+    if (element === 2)
+        id = "left-hand-flash-red";
+    if (element === 3)
+        id = "right-hand-flash-red";
+    fadeOut(id, 0.6, 12);
 }
 
 export function shoutFlashAnim(maxShoutTime: number) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
     fadeIn("voice-icon", maxShoutTime, maxShoutTime * 4);
     fadeOut("voice-flash", 0.2, 4);
@@ -530,13 +611,13 @@ export function shoutFlashAnim(maxShoutTime: number) {
 }
 
 export function shoutRechargedFlashAnim() {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
     fadeOut("voice-flash-alt", 0.2*2, 4*2);
 }
 
 export function updateGoldCount(goldCount: number) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
     changeTextContent("player-gold-count", goldCount.toString());
 }
@@ -547,9 +628,9 @@ export function updateGoldCount(goldCount: number) {
 // Plays a count animation of added/removed gold.
 // ----------------------------------------------
 export async function goldCountAnimation(goldDelta: number) {
-    if (!settings.uiVisible)
+    if (settings.hideWidgets)
         return;
-    if (!settings.uiGoldWidgetVisibility)
+    if (settings.hideGoldWidget)
         return;
     if (goldDelta === 0)
         return;

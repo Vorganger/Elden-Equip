@@ -1,12 +1,13 @@
-import { Debug, Form, FormType, Game, printConsole } from "@skyrim-platform/skyrim-platform";
+import { Debug, Form, FormType, Game, printConsole, Potion } from "@skyrim-platform/skyrim-platform";
 import { solveForm, solveInt, solveIntSetter } from "@skyrim-platform/jcontainers/JDB";
 import { equip, unequip, writeObjArrToJCon } from "./utilities";
-import { editModeNotification } from "./settings";
+import { ammoCycleUnequip, cycleEditorMessages, leftHandCycleUnequip, rightHandCycleUnequip, voiceCycleUnequip } from "./settings";
+import * as settings from "./settings";
 import * as consts from "./constants";
 
 // Messages when adding or removing
-export function printEditModeMessage(message: string) {
-    if (!editModeNotification)
+export function printCycleEditorMessage(message: string) {
+    if (!cycleEditorMessages)
         return;
     Debug.notification(message);
 }
@@ -96,6 +97,13 @@ export class EquipmentCycle extends Cycle {
         // No match found
         this.index = this.arr.length -1;
     }
+    resetIndex(): boolean {
+        if (this.arr.length < 1)
+            return false;
+        this.index = 0;
+        this.use();
+        return true;
+    }
     use(): boolean {
         // Returns true, since the unequipped index cannot be removed
         if (this.index === this.arr.length) {
@@ -106,16 +114,33 @@ export class EquipmentCycle extends Cycle {
     }
     advance(): void {
         if (this.arr.length === 0) {
+            // Prevents unequipped slot from unequipping, based on settings.
+            if ((!leftHandCycleUnequip && this.slot === 0) ||
+                (!rightHandCycleUnequip && this.slot === 1) ||
+                (!voiceCycleUnequip && this.slot === 2) ||
+                (!ammoCycleUnequip && this.slot === 3))
+            {
+                return;
+            }
             unequip(this.getEquippedItem(), this.slot);
             return;
         }
         // Advances index
         this.index++;
+        // Prevents unequipped slot from unequipping, based on settings.
+        if ((!leftHandCycleUnequip && this.slot === 0) ||
+            (!rightHandCycleUnequip && this.slot === 1) ||
+            (!voiceCycleUnequip && this.slot === 2) ||
+            (!ammoCycleUnequip && this.slot === 3))
+        {
+            if (this.index === this.arr.length)
+                this.index = 0;
+        }
         if (this.index > this.arr.length)
             this.index = 0;
         // Player has item count of one and that item is equipped on the other slot
         let item = Game.getFormEx(this.getItemId());
-        let player = Game.getPlayer()
+        let player = Game.getPlayer();
         if (player?.getItemCount(item) === 1) {
             if (this.slot === 0) {
                 if (player.getEquippedObject(1) === item) {
@@ -125,7 +150,7 @@ export class EquipmentCycle extends Cycle {
             }
             if (this.slot === 1) {
                 // Helps with cases where RH is two handed, which results in unexpected behavior
-                // (i.e. to-be-equipped RH === LH, but RH somehow equips)
+                // (i.e., to-be-equipped RH === LH, but RH somehow equips)
                 if (solveForm(consts.LEFTHAND_RECENT) === item) {
                     this.advance();
                     return;
@@ -158,11 +183,11 @@ export class EquipmentCycle extends Cycle {
     add(newItemID: number): void {
         let newItemName = Game.getFormEx(newItemID)?.getName();
         if (this.arr.includes(newItemID)) {
-            printEditModeMessage(`${newItemName} is in the ${this.name} cycle.`);
+            printCycleEditorMessage(`${newItemName} is in the ${this.name} cycle.`);
             return;
         }
         this.arr.splice(this.index + 1, 0, newItemID);
-        printEditModeMessage(`Added ${newItemName} to the ${this.name} cycle.`);
+        printCycleEditorMessage(`Added ${newItemName} to the ${this.name} cycle.`);
     }
     remove(): void {
         let removedName = "";
@@ -171,7 +196,7 @@ export class EquipmentCycle extends Cycle {
         let equippedItem = this.getEquippedItem();
         let equippedItemIndex = this.arr.indexOf(equippedItem?.getFormID() ?? 0);
         if (equippedItemIndex === -1) {
-            printEditModeMessage(`${equippedItem?.getName() ?? ""} does not exist in the ${this.name} cycle`);
+            printCycleEditorMessage(`${equippedItem?.getName() ?? ""} does not exist in the ${this.name} cycle`);
             this.use();
             return;
         }
@@ -179,7 +204,7 @@ export class EquipmentCycle extends Cycle {
         removedIndex = equippedItemIndex;
         // Removes item at the current index.
         this.arr.splice(removedIndex, 1);
-        printEditModeMessage(`Removed ${removedName} from the ${this.name} cycle.`);
+        printCycleEditorMessage(`Removed ${removedName} from the ${this.name} cycle.`);
         // Equips/unequips, depending on the current index.
         this.use();
     }
@@ -211,12 +236,79 @@ export class QuickItemCycle extends Cycle {
             this.index = 0;
         solveIntSetter(consts.QUICKITEM_INDEX, this.index, true);
     }
+    // - Uses the player's current health/magicka/stamina count to determine what restoration to use.
+    // - Returns true if an optimal potion would be used, but false otherwise.
+    useOptimalPotion(item: Form | null): boolean {
+        // Item is not a potion.
+        if (item?.getType() !== FormType.Potion) {
+            return false;
+        }
+        // Uses currently queued quick item to determine what the potion is.
+        let potion = Potion.from(item);
+        let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID();
+        let actorValueWord = "";
+        switch (potionType) {
+            case consts.RESTORE_HEALTH_ID:
+                actorValueWord = "Health";
+                break;
+            case consts.RESTORE_MAGICKA_ID:
+                actorValueWord = "Magicka";
+                break;
+            case consts.RESTORE_STAMINA_ID:
+                actorValueWord = "Stamina";
+                break;
+            // Any other potion type.
+            default:
+                return false;
+        }
+        // Only continues depending on what the potion type is and the settings.
+        if ((actorValueWord === "Health" && settings.useOptimalHealthPotion) ||
+            (actorValueWord === "Magicka" && settings.useOptimalMagickaPotion) ||
+            (actorValueWord === "Stamina" && settings.useOptimalStaminaPotion))
+        {
+            let optimalPotion = null; // Optimal potion to use.
+            // Smallest value would indicate the most optimal potion.
+            let optimalDiff = null;
+            let player = Game.getPlayer();
+            // Player health/magicka/stamina.
+            let playerAVDiff = (player?.getActorValueMax(actorValueWord) ?? 0) - (player?.getActorValue(actorValueWord) ?? 0);
+            // Finds optimal potion to use.
+            let playerNumItems = player?.getNumItems() ?? 0;
+            for (let i = 0; i < playerNumItems; i++) {
+                let playerItem = player?.getNthForm(i) ?? null;
+                // Item is not a potion.
+                if (item?.getType() !== FormType.Potion)
+                    continue;
+                let potion = Potion.from(playerItem);
+                let type = potion?.getNthEffectMagicEffect(0)?.getFormID();
+                // Potion does not match the specified type.
+                if (potionType !== type)
+                    continue;
+                let potionMaginitude = potion?.getNthEffectMagnitude(0) ?? 0;
+                let tempDiff = Math.abs(potionMaginitude - playerAVDiff);
+                // If this is the first time computing optimalDiff OR
+                // tempDiff is a smaller (more optimal) value.
+                if (!optimalDiff || optimalDiff > tempDiff) {
+                    optimalDiff = tempDiff;
+                    optimalPotion = potion;
+                }
+            }
+            // Use optimal potion in the end.
+            equip(optimalPotion);
+            return true;
+        }
+        // Assuming only restoration potions have been used.
+        return false;
+    }
     use(): void {
         let player = Game.getPlayer();
         if (!player)
             return;
         let item = Game.getFormEx(this.getItemId());
         if (!item)
+            return;
+        // Returning true indicates an optimal potion was used.
+        if (this.useOptimalPotion(item))
             return;
         if (!player.isEquipped(item))
             equip(item);
@@ -229,7 +321,7 @@ export class QuickItemCycle extends Cycle {
         if (itemType !== FormType.Potion && itemType !== FormType.Armor)
             return;
         if (this.arr.includes(itemID)) {
-            printEditModeMessage(`${item?.getName()} is in the ${this.name} cycle.`);
+            printCycleEditorMessage(`${item?.getName()} is in the ${this.name} cycle.`);
             return;
         }
         if (this.index >= this.arr.length) {
@@ -240,12 +332,12 @@ export class QuickItemCycle extends Cycle {
         // Advances index
         if (this.arr.length >= 1)
             this.index++;
-        printEditModeMessage(`Added ${Game.getFormEx(itemID)?.getName()} to the ${this.name} cycle.`);
+        printCycleEditorMessage(`Added ${Game.getFormEx(itemID)?.getName()} to the ${this.name} cycle.`);
     }
     remove(): void {
         let itemID = this.getItemId();
         if (!itemID) {
-            printEditModeMessage(`Cannot remove empty slot from the ${this.name} cycle.`);
+            printCycleEditorMessage(`Cannot remove empty slot from the ${this.name} cycle.`);
             return;
         }
         if (this.arr.length === 0 || this.index >= this.arr.length)
@@ -254,6 +346,6 @@ export class QuickItemCycle extends Cycle {
         // In case the last index was deleted
         if (this.index >= this.arr.length)
             this.index = 0;
-        printEditModeMessage(`Removed ${Game.getFormEx(itemID)?.getName()} from the ${this.name} cycle.`);
+        printCycleEditorMessage(`Removed ${Game.getFormEx(itemID)?.getName()} from the ${this.name} cycle.`);
     }
 }

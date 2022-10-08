@@ -17,25 +17,14 @@ on("update", () => {
         return;
     fun.updateTime();
     fun.updateElementOpacities();
-    fun.updateEditModeRemoveTimer();
+    fun.updateCycleEditorRemoveTimer();
+    fun.updateExitMenuTimer();
     if (!fun.onUpdateInterval())
         return;
     let player = Game.getPlayer();
-    fun.updateActivateKey();
     fun.updatePouchObjects();
     fun.updateShoutCooldown(player);
-});
-
-on("combatState", (event) => {
-    let player = Game.getPlayer();
-    if (player?.isInCombat() && event.isCombat) {
-        fun.updateCombatUIOpacity(true);
-        return;
-    }
-    if (!player?.isInCombat() && !event.isCombat) {
-        fun.updateCombatUIOpacity(false);
-        return;
-    }
+    fun.dynamicVisibilityEvents(player);
 });
 
 on("deathStart", (event) => {
@@ -45,9 +34,15 @@ on("deathStart", (event) => {
     }
 });
 
-on("menuClose", () => {
+on("menuClose", (event) => {
     fun.updateMenuClosed();
     fun.updateWidgetVisibility();
+    // No particular event to detect changes to the MCM.
+    if (event.name === "Journal Menu") {
+        settings.updateMCMSettings();
+        fun.updateActivateKey();
+    }
+    fun.startTimer(fun.exitMenuTimer); // Starts exitMenuTimer.
 });
 
 on("menuOpen", () => {
@@ -131,25 +126,25 @@ on("unequip", (event) => {
 });
 
 on("buttonEvent", (event) => {
-    if (!fun.isInit || fun.playerDead || settings.disableControls)
+    if (!fun.isInit || fun.playerDead || settings.disableControls || fun.exitMenuTimer.isEnabled)
         return;
     switch (event.code) {
         case settings.leftKey.code:
-            fun.leftKeyEvent(event.device, event.isDown);
+            fun.leftKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;
         case settings.rightKey.code:
-            fun.rightKeyEvent(event.device, event.isDown);
+            fun.rightKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;
         case settings.upKey.code:
-            fun.upKeyEvent(event.device, event.isDown);
+            fun.upKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;
         case settings.downKey.code:
             fun.downKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;
         case settings.itemUseKey.code:
             fun.itemUseKeyEvent(event.device, event.isDown, event.isUp);
-        case settings.editModeKey.code:
-            fun.editModeKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
+        case settings.cycleEditorKey.code:
+            fun.cycleEditorKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
             return;
         case fun.activateKeyKeyboard.code:
             fun.activateKeyEvent(event.isDown, event.isUp, event.isHeld, event.heldDuration);
