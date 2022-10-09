@@ -118,12 +118,12 @@ export function initWidgets() {
     if (settings.widgetDynamicVisibility) {
         if (settings.widgetDVOnCombat) {
             if (!player?.isInCombat()) {
-                setDynamicVisibility(false, 0);
+                setWidgetVisibility(false, 0);
                 return;
             }
         }
     }
-    setDynamicVisibility(true, 0);
+    setWidgetVisibility(true, 0);
 }
 
 export let allowInit = true;
@@ -394,8 +394,8 @@ export function updateGoldUIVisibility() {
         return;
     }
 }
-function setDynamicVisibility(isVisible: boolean, delay: number) {
-    if (!settings.widgetDynamicVisibility || pouch.isOpen) {
+function setWidgetVisibility(isVisible: boolean, delay: number) {
+    if (pouch.isOpen) {
         return;
     }
     if (isVisible) {
@@ -418,10 +418,10 @@ export function dynamicVisibilityEvents(player: Actor | null) {
     // "Show on combat" is enabled.
     if (settings.widgetDVOnCombat) {
         if (currPlayerInCombat && !playerInCombat) { // combat start.
-            setDynamicVisibility(true, 0);
+            setWidgetVisibility(true, 0);
         }
         if (!currPlayerInCombat && playerInCombat) { // combat end.
-            setDynamicVisibility(false, 5);
+            setWidgetVisibility(false, 5);
         }
     }
     playerInCombat = currPlayerInCombat;

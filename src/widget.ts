@@ -341,6 +341,9 @@ function updateIcon(item: Form | null, iconElement: string) {
         case FormType.Spell:
             updateIconSpell(item, iconElement);
             return;
+        case FormType.ScrollItem:
+            changeSource(iconElement, consts.ITEM_SCROLL_ICON);
+            return;
         case FormType.Armor:
             updateIconArmor(item, iconElement);
             return;

@@ -58,6 +58,7 @@ export const EFFECT_FIRE_ICON = "images/icons/effect/effect_fire.svg";
 export const EFFECT_FROST_ICON = "images/icons/effect/effect_frost.svg";
 export const EFFECT_POISON_ICON = "images/icons/effect/effect_poison.svg";
 // Item
+export const ITEM_SCROLL_ICON = "images/icons/item_scroll.svg";
 export const ITEM_TORCH_ICON = "images/icons/item_torch.svg";
 // Magic
 export const MAGIC_ALTERATION_ICON = "images/icons/magic/magic_alteration.svg";

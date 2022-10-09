@@ -108,6 +108,9 @@ export function equip(item: Form | null, slot?: number): boolean {
         case FormType.Spell:
             modevents.equipSpellPapyrus(item, slot ?? 1);
             break;
+        case FormType.ScrollItem:
+            modevents.equipItemPapyrus(item);
+            break;
         case FormType.Armor:
             modevents.equipItemPapyrus(item);
             break;
@@ -142,6 +145,9 @@ export function unequip(item: Form | null, slot?: number): boolean {
     switch (itemType) {
         case FormType.Spell:
             modevents.unequipSpellPapyrus(item, slot ?? 1);
+            break;
+        case FormType.ScrollItem:
+            modevents.unequipItemPapyrus(item);
             break;
         case FormType.Armor:
             modevents.unequipItemPapyrus(item);
