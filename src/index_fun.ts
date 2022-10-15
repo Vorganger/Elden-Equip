@@ -596,6 +596,12 @@ export function equipQuickItemEvent(equipped: Form) {
     if (equippedType === FormType.Armor && Armor.from(equipped)?.getSlotMask() === SlotMask.Shield)
         return;
     quickItemCycle.add(equipped.getFormID());
+    if (settings.cycleEditorAddPotion) {
+        let player = Game.getPlayer();
+        if (equippedType === FormType.Potion && !player?.isInCombat()) {
+            player?.addItem(equipped, 1, false);
+        }
+    }
     // Updates quick item widget.
     widget.updateQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()), Game.getFormEx(quickItemCycle.getItemIdOffset(1)), Game.getFormEx(quickItemCycle.getItemIdOffset(2)));
 }

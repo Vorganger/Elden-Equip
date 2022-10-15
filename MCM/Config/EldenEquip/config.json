@@ -1,0 +1,572 @@
+{
+	"modName": "EldenEquip",
+	"displayName": "Elden Equip",
+	"minMcmVersion": 9,
+	"cursorFillMode": "topToBottom",
+	"pages": [
+		{
+			"pageDisplayName": "Controls",
+			"cursorFillMode": "topToBottom",
+			"content": [
+				{
+					"text": "Buttons",
+					"type": "header"
+				},
+				{
+					"id": "uUpButton:Buttons",
+					"text": "Up Button",
+					"type": "keymap",
+					"help": "Button for cycling voice slots or the top item in the pouch.",
+					"ignoreConflicts": true,
+					"valueOptions": {
+						"sourceType": "ModSettingInt"
+					}
+				},
+				{
+					"id": "uDownButton:Buttons",
+					"text": "Down Button",
+					"type": "keymap",
+					"help": "Button for cycling quick item slots or the bottom item in the pouch.",
+					"ignoreConflicts": true,
+					"valueOptions": {
+						"sourceType": "ModSettingInt"
+					}
+				},
+				{
+					"id": "uLeftButton:Buttons",
+					"text": "Left Button",
+					"type": "keymap",
+					"help": "Button for cycling left hand item slots or the left item in the pouch.",
+					"ignoreConflicts": true,
+					"valueOptions": {
+						"sourceType": "ModSettingInt"
+					}
+				},
+				{
+					"id": "uRightButton:Buttons",
+					"text": "Right Button",
+					"type": "keymap",
+					"help": "Button for cycling right hand item slots or the right item in the pouch.",
+					"ignoreConflicts": true,
+					"valueOptions": {
+						"sourceType": "ModSettingInt"
+					}
+				},
+				{
+					"id": "uItemUseButton:Buttons",
+					"text": "Item Use Button",
+					"type": "keymap",
+					"help": "Button for using the queued quick item.",
+					"ignoreConflicts": true,
+					"valueOptions": {
+						"sourceType": "ModSettingInt"
+					}
+				},
+				{
+					"id": "uCycleEditorButton:Buttons",
+					"text": "Cycle Editor Button",
+					"type": "keymap",
+					"help": "Button for accessing the cycle editor.",
+					"ignoreConflicts": true,
+					"valueOptions": {
+						"sourceType": "ModSettingInt"
+					}
+				},
+				{
+					"text": "Hold Times",
+					"type": "header",
+					"position": 1
+				},
+				{
+					"id": "fCycleEditor:HoldTimes",
+					"text": "Cycle Editor Hold Time",
+					"type": "slider",
+					"help": "Hold time for the cycle editor.",
+					"valueOptions": {
+						"min": 0.1,
+						"max": 1,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"id": "fPouchAccess:HoldTimes",
+					"text": "Pouch Access Hold Time",
+					"type": "slider",
+					"help": "Hold time for accessing pouch items with the activate button.",
+					"valueOptions": {
+						"min": 0.1,
+						"max": 1,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"id": "fCycleButton:HoldTimes",
+					"text": "Cycle Button Hold Time",
+					"type": "slider",
+					"help": "Hold time for cycling buttons (up, down, left, right).",
+					"valueOptions": {
+						"min": 0.1,
+						"max": 1,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"id": "fDualCast:HoldTimes",
+					"text": "Dual Cast Hold Time",
+					"type": "slider",
+					"help": "Hold time to dual cast.",
+					"valueOptions": {
+						"min": 0.1,
+						"max": 1,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"text": "Control Options",
+					"type": "header"
+				},
+				{
+					"id": "bDisableControls:ControlOptions",
+					"text": "Disable Controls",
+					"type": "toggle",
+					"help": "Disables all controls from Elden Equip.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				}
+			]
+		},
+		{
+			"pageDisplayName": "Equipping",
+			"cursorFillMode": "topToBottom",
+			"content": [
+				{
+					"text": "Unequip Slots",
+					"type": "header"
+				},
+				{
+					"id": "bLeftHandCycleUnequip:UnequipSlots",
+					"text": "Left Hand Cycle",
+					"type": "toggle",
+					"help": "Unequips the left hand item when cycled to the end of the left hand cycle.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bRightHandCycleUnequip:UnequipSlots",
+					"text": "Right Hand Cycle",
+					"type": "toggle",
+					"help": "Unequips the right hand item when cycled to the end of the right hand cycle.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bVoiceCycleUnequip:UnequipSlots",
+					"text": "Voice Cycle",
+					"type": "toggle",
+					"help": "Unequips the voice item when cycled to the end of the voice cycle.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bAmmoCycleUnequip:UnequipSlots",
+					"text": "Ammo Cycle",
+					"type": "toggle",
+					"help": "Unequips the ammo item when cycled to the end of the ammo cycle.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "Cycle Button Hold Reset",
+					"type": "header"
+				},
+				{
+					"id": "bLeftHandCycleHoldReset:HoldReset",
+					"text": "Left Hand Cycle",
+					"type": "toggle",
+					"help": "Allows holding the left hand cycle button to reset its index.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bRightHandCycleHoldReset:HoldReset",
+					"text": "Right Hand Cycle",
+					"type": "toggle",
+					"help": "Allows holding the right hand cycle button to reset its index.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bVoiceCycleHoldReset:HoldReset",
+					"text": "Voice Cycle",
+					"type": "toggle",
+					"help": "Allows holding the voice cycle button to reset its index.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bAmmoCycleHoldReset:HoldReset",
+					"text": "Ammo Cycle",
+					"type": "toggle",
+					"help": "Allows holding the ammo cycle button to reset its index.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "Cycle Editor",
+					"type": "header"
+				},
+				{
+					"id": "bCycleEditorAddPotion:CycleEditor",
+					"text": "Add Potion",
+					"type": "toggle",
+					"help": "Adds any \"equipped\" potion added to the quick item cycle back to the player's inventory. Potions are not added to the inventory if the player is in combat, though.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "Cycle Button Hold Options",
+					"type": "header",
+					"position": 1
+				},
+				{
+					"id": "bLeftHandHoldDualCast:HoldOptions",
+					"text": "Left Hand Dual Cast",
+					"type": "toggle",
+					"help": "Allows dual casting an equipped (independent of the cycle) left hand spell by holding the left hand cycle button.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bRightHandHoldDualCast:HoldOptions",
+					"text": "Right Hand Dual Cast",
+					"type": "toggle",
+					"help": "Allows dual casting an equipped (independent of the cycle) right hand spell by holding the right hand cycle button.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bUseQuickItemAlt:HoldOptions",
+					"text": "Alternate Quick Item Use",
+					"type": "toggle",
+					"help": "Use the queued quick item by holding the quick item cycle button. Also disables the hold cycle reset functionality in the quick item cycle.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "Optimal Restoration Potions",
+					"type": "header"
+				},
+				{
+					"id": "bUseOptimalHealthPotion:OptimalPotions",
+					"text": "Health Potions",
+					"type": "toggle",
+					"help": "Allows usage of optimal health restoration potions in the quick item cycle. Enabling this automatically replaces all health restoration potions.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bUseOptimalMagickaPotion:OptimalPotions",
+					"text": "Magicka Potions",
+					"type": "toggle",
+					"help": "Allows usage of optimal magicka restoration potions in the quick item cycle. Enabling this automatically replaces all magicka restoration potions.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bUseOptimalStaminaPotion:OptimalPotions",
+					"text": "Stamina Potions",
+					"type": "toggle",
+					"help": "Allows usage of optimal stamina restoration potions in the quick item cycle. Enabling this automatically replaces all stamina restoration potions.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "Pouch Items",
+					"type": "header"
+				},
+				{
+					"id": "uOffset:Pouch",
+					"text": "Favorited Items Hotkeys Offset",
+					"type": "slider",
+					"help": "Offsets the favorited item hotkey positions. By default, pouch items are based on favorited item hotkeys 1-4 with offset set to 0. With offset set to 1, pouch items are based on favorited item hotkeys 2-5. Same idea goes for other offset values.",
+					"ignoreConflicts": true,
+					"valueOptions": {
+						"min": 0,
+						"max": 4,
+						"step": 1,
+						"sourceType": "ModSettingInt"
+					}
+				}
+			]
+		},
+		{
+			"pageDisplayName": "Widget",
+			"cursorFillMode": "topToBottom",
+			"content": [
+				{
+					"text": "Positioning",
+					"type": "header"
+				},
+				{
+					"id": "fEquipmentWidgetX:Position",
+					"text": "Equipment Widget X-Axis",
+					"type": "slider",
+					"help": "Equipment widget position on the x-axis.",
+					"valueOptions": {
+						"min": -20,
+						"max": 120,
+						"step": 0.5,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"id": "fEquipmentWidgetY:Position",
+					"text": "Equipment Widget Y-Axis",
+					"type": "slider",
+					"help": "Equipment widget position on the y-axis.",
+					"valueOptions": {
+						"min": -20,
+						"max": 120,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"id": "fGoldWidgetX:Position",
+					"text": "Gold Widget X-Axis",
+					"type": "slider",
+					"help": "Gold widget position on the x-axis.",
+					"valueOptions": {
+						"min": -20,
+						"max": 120,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"id": "fGoldWidgetY:Position",
+					"text": "Gold Widget Y-Axis",
+					"type": "slider",
+					"help": "Gold widget position on the y-axis.",
+					"valueOptions": {
+						"min": -20,
+						"max": 120,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"text": "Scaling",
+					"type": "header"
+				},
+				{
+					"id": "fEquipmentWidgetScale:Scaling",
+					"text": "Equipment Widget Scale",
+					"type": "slider",
+					"help": "Equipment widget scale multiplier.",
+					"valueOptions": {
+						"min": 0.1,
+						"max": 4,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"id": "fGoldWidgetScale:Scaling",
+					"text": "Gold Widget Scale",
+					"type": "slider",
+					"help": "Gold widget scale multiplier.",
+					"valueOptions": {
+						"min": 0.1,
+						"max": 4,
+						"step": 0.1,
+						"formatString": "{1}",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"text": "Performance",
+					"type": "header"
+				},
+				{
+					"id": "bDisableOpacityTransitions:Performance",
+					"text": "Disable Opacity Transitions",
+					"type": "toggle",
+					"help": "Disables opacity transitions to improve performance.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bDisableFlashFeedback:Performance",
+					"text": "Disable Flash Feedback",
+					"type": "toggle",
+					"help": "Disables flash feedback animations to improve performance.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "Visibility",
+					"type": "header",
+					"position": 1
+				},
+				{
+					"id": "bHideWidgets:Visibility",
+					"text": "Hide Widgets",
+					"type": "toggle",
+					"help": "Hides all widgets.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bHideHandNames:Visibility",
+					"text": "Hide Hand Names",
+					"type": "toggle",
+					"help": "Hides hand names found on the equipment widget.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bHideAmmoName:Visibility",
+					"text": "Hide Ammo Name",
+					"type": "toggle",
+					"help": "Hides ammo name found on the equipment widget.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bHideGoldWidget:Visibility",
+					"text": "Hide Gold Widget",
+					"type": "toggle",
+					"help": "Hides gold widget.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "Dynamic Visibility",
+					"type": "header"
+				},
+				{
+					"id": "bEnabled:DynamicVisibility",
+					"text": "Enable",
+					"type": "toggle",
+					"help": "Enables dynamic visibility, similar to how Elden Ring has an \"Auto\" HUD setting.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bShowOnCombat:DynamicVisibility",
+					"text": "Show On Combat",
+					"type": "toggle",
+					"help": "Shows/hides equipment and gold widget on combat start/end.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bShowOnActivate:DynamicVisibility",
+					"text": "Show On Activate",
+					"type": "toggle",
+					"help": "Shows equipment and gold widget on activate button press.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				}
+			]
+		},
+		{
+			"pageDisplayName": "Misc",
+			"cursorFillMode": "topToBottom",
+			"content": [
+				{
+					"text": "Messages",
+					"type": "header"
+				},
+				{
+					"id": "bInitialization:Messages",
+					"text": "Initialization Console Message",
+					"type": "toggle",
+					"help": "Shows the console message when Elden Equip has completed initialization.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bCycleEditor:Messages",
+					"text": "Cycle Editor Messages",
+					"type": "toggle",
+					"help": "Shows messages when actions are done in the cycle editor.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "Debug",
+					"type": "header"
+				},
+				{
+					"id": "bPrintCycles:Debug",
+					"text": "Print Cycles",
+					"type": "toggle",
+					"help": "Prints all current cycles to the console.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bResetCycles:Debug",
+					"text": "Reset Cycles",
+					"type": "toggle",
+					"help": "Resets all current cycles.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"id": "bUninstallMod:Debug",
+					"text": "Uninstall Mod",
+					"type": "toggle",
+					"help": "Removes all information stored in JContainers. Makes it safe to uninstall Elden Equip.",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				}
+			]
+		}
+	]
+}

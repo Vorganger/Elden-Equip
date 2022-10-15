@@ -33,6 +33,8 @@ export let leftHandCycleHoldReset: boolean;
 export let rightHandCycleHoldReset: boolean;
 export let voiceCycleHoldReset: boolean;
 export let ammoCycleHoldReset: boolean;
+// Equipping - Cycle Editor
+export let cycleEditorAddPotion: boolean;
 // Equipping - Hold Options
 export let leftHandHoldDualCast: boolean;
 export let rightHandHoldDualCast: boolean;
@@ -101,6 +103,8 @@ export function updateMCMSettings() {
     rightHandCycleHoldReset = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bRightHandCycleHoldReset:HoldReset"));
     voiceCycleHoldReset = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bVoiceCycleHoldReset:HoldReset"));
     ammoCycleHoldReset = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bAmmoCycleHoldReset:HoldReset"));
+    // Equipping - Cycle Editor
+    cycleEditorAddPotion = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bCycleEditorAddPotion:CycleEditor"));
     // Equipping - Hold Options
     leftHandHoldDualCast = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bLeftHandHoldDualCast:HoldOptions"));
     rightHandHoldDualCast = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bRightHandHoldDualCast:HoldOptions"));
