@@ -141,7 +141,7 @@ export class EquipmentCycle extends Cycle {
         // Player has item count of one and that item is equipped on the other slot
         let item = Game.getFormEx(this.getItemId());
         let player = Game.getPlayer();
-        if (player?.getItemCount(item) === 1) {
+        if (item && player?.getItemCount(item) === 1) {
             if (this.slot === 0) {
                 if (player.getEquippedObject(1) === item) {
                     this.advance();

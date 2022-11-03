@@ -66,9 +66,18 @@ export function initCycles() {
     initCycle(voiceCycle, utils.readObjArrFromJCon(consts.VOICE_ARRAY));
     initCycle(ammoCycle, utils.readObjArrFromJCon(consts.AMMO_ARRAY));
     initCycle(quickItemCycle, utils.readObjArrFromJCon(consts.QUICKITEM_ARRAY));
-    quickItemCycle.count = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemIdOffset(0))) ?? 0;
-    quickItemCycle.offsetOneCount = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemIdOffset(1))) ?? 0;
-    quickItemCycle.offsetTwoCount = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemIdOffset(2))) ?? 0;
+    let quickItem = Game.getFormEx(quickItemCycle.getItemIdOffset(0));
+    if (quickItem) {
+        quickItemCycle.count = player?.getItemCount(quickItem) ?? 0;
+    }
+    let quickItemOffsetOne = Game.getFormEx(quickItemCycle.getItemIdOffset(1));
+    if (quickItemOffsetOne) {
+        quickItemCycle.offsetOneCount = player?.getItemCount(quickItemOffsetOne) ?? 0;
+    }
+    let quickItemOffsetTwo = Game.getFormEx(quickItemCycle.getItemIdOffset(2));
+    if (quickItemOffsetTwo) {
+        quickItemCycle.offsetTwoCount = player?.getItemCount(quickItemOffsetTwo) ?? 0;
+    }
 }
 
 // Resets all current cycle objects' arrays.
@@ -205,7 +214,7 @@ export function updateActivateKey() {
     activateKeyGamepad = utils.convertKeyValue(Input.getMappedKey("Activate", InputDeviceType.Gamepad));
 }
 
-export function updateAmmoCount(player: Actor | null) {
+export function updateAmmoCount(player: Actor) {
     if (!playerHoldingBow)
         return;
     let ammo = solveForm(consts.AMMO_RECENT) ?? null;
@@ -246,20 +255,32 @@ export function updateQuickItemCount(currentCount: number, quickItemCount: numbe
     widget.updateItemCount(`${elementPrefix}-count`, `${elementPrefix}-icon`, Game.getFormEx(quickItemID));
 }
 
-export function updateQuickItemCounts(player: Actor | null) {
+export function updateQuickItemCounts(player: Actor) {
     // Runs the optimal potion widget updater function by default, but depending on its return value,
     // the item count will update based on the specific Form in the quick item cycle.
-    if (!widget.updateOptimalPotionQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()))) {
-        let count = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemId())) ?? 0;
-        if (count !== quickItemCycle.count)
-            updateQuickItemCount(count, quickItemCycle.count, 0);
+    let isOptimalPotion = widget.updateOptimalPotionQuickItemWidget(Game.getFormEx(quickItemCycle.getItemId()));
+    if (!isOptimalPotion) {
+        let item = Game.getFormEx(quickItemCycle.getItemId());
+        let itemCount = 0;
+        if (item) {
+            itemCount = player?.getItemCount(item) ?? 0;
+        }
+        if (itemCount !== quickItemCycle.count) {
+            updateQuickItemCount(itemCount, quickItemCycle.count, 0);
+        }
     }
-    let offsetOneCount = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemIdOffset(1))) ?? 0;
-    let offsetTwoCount = player?.getItemCount(Game.getFormEx(quickItemCycle.getItemIdOffset(2))) ?? 0;
-    if (offsetOneCount !== quickItemCycle.offsetOneCount)
-        updateQuickItemCount(offsetOneCount, quickItemCycle.offsetOneCount, 1);
-    if (offsetTwoCount !== quickItemCycle.offsetTwoCount)
-        updateQuickItemCount(offsetTwoCount, quickItemCycle.offsetTwoCount, 2);
+    let itemOffsetOne = Game.getFormEx(quickItemCycle.getItemIdOffset(1));
+    if (itemOffsetOne) {
+        let offsetOneCount = player?.getItemCount(itemOffsetOne) ?? 0;
+        if (offsetOneCount !== quickItemCycle.offsetOneCount)
+            updateQuickItemCount(offsetOneCount, quickItemCycle.offsetOneCount, 1);
+    }
+    let itemOffsetTwo = Game.getFormEx(quickItemCycle.getItemIdOffset(2));
+    if (itemOffsetTwo) {
+        let offsetTwoCount = player?.getItemCount(itemOffsetTwo) ?? 0;
+        if (offsetTwoCount !== quickItemCycle.offsetTwoCount)
+            updateQuickItemCount(offsetTwoCount, quickItemCycle.offsetTwoCount, 2);
+    }
 }
 
 function updatePouchObject(pouch: Pouch) {
@@ -281,7 +302,11 @@ export function updatePouchObjects() {
 
 function updatePouchCount(player: Actor | null, pouch: Pouch) {
     // Checks for changes in the pouch item's count
-    let currentPouchCount = player?.getItemCount(Game.getFormEx(pouch.itemID)) ?? 0;
+    let pouchItem = Game.getFormEx(pouch.itemID);
+    let currentPouchCount = 0;
+    if (pouchItem) {
+        currentPouchCount = player?.getItemCount(pouchItem) ?? 0;
+    }
     if (pouch.count !== currentPouchCount) {
         pouch.count = currentPouchCount;
         let pouchItem = Game.getFormEx(pouch.itemID);
@@ -289,14 +314,14 @@ function updatePouchCount(player: Actor | null, pouch: Pouch) {
     }
 }
 
-export function updatePouchCounts(player: Actor | null) {
+export function updatePouchCounts(player: Actor) {
     updatePouchCount(player, upPouch);
     updatePouchCount(player, rightPouch);
     updatePouchCount(player, leftPouch);
     updatePouchCount(player, downPouch);
 }
 
-export function updateGoldCount(player: Actor | null) {
+export function updateGoldCount(player: Actor) {
     let currentCount = player?.getGoldAmount() ?? 0;
     if (currentCount === playerGold)
         return;

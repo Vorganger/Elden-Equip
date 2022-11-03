@@ -396,9 +396,9 @@ export function updateItemCount(countElement: string, iconElement: string, item:
         return;
     updateIconOpacity(item, iconElement);
     let itemType = item?.getType();
-    if (itemType === FormType.Ammo || itemType === FormType.Potion) {
-        let itemCount = (Game.getPlayer()?.getItemCount(item) ?? 0).toString();
-        changeTextContent(countElement, itemCount);
+    if (item && (itemType === FormType.Ammo || itemType === FormType.Potion)) {
+        let itemCount = Game.getPlayer()?.getItemCount(item) ?? 0;
+        changeTextContent(countElement, itemCount.toString());
         return;
     }
     changeTextContent(countElement, "");
@@ -457,11 +457,13 @@ function getTotalPotionTypeCount(potionTypeID: number): number {
         if (item?.getType() !== FormType.Potion)
             continue;
         let potion = Potion.from(item);
-        let type = potion?.getNthEffectMagicEffect(0)?.getFormID();
-        // Item does not match the type.
-        if (potionTypeID !== type)
-            continue;
-        potionTypeCount += player?.getItemCount(potion) ?? 0;
+        if (potion) {
+            let type = potion?.getNthEffectMagicEffect(0)?.getFormID();
+            // Item does not match the type.
+            if (potionTypeID !== type)
+                continue;
+            potionTypeCount += player?.getItemCount(potion) ?? 0;
+        }
     }
     return potionTypeCount;
 }
@@ -561,7 +563,17 @@ export async function updateAmmoWidget() {
     // Updates the icon, name, and count
     updateIcon(ammo, "ammo-icon");
     changeTextContent("ammo-name", (ammo?.getName() ?? ""));
-    changeTextContent("ammo-count", ((ammo) ? player?.getItemCount(ammo).toString() ?? "" : ""));
+    let ammoCount = 0;
+    if (ammo) {
+        ammoCount = player?.getItemCount(ammo) ?? 0;
+    }
+    let ammoCountStr;
+    if (ammoCount === 0) {
+        ammoCountStr = "";
+    } else {
+        ammoCountStr = ammoCount.toString();
+    }
+    changeTextContent("ammo-count", ammoCountStr);
     // Updates icon opacity based on ammo and weapon are compatibility.
     let weapon = Weapon.from(player?.getEquippedObject(1) ?? null);
     if (utils.isAmmoCompatible(weapon, Ammo.from(ammo))) {

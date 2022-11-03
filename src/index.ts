@@ -1,4 +1,4 @@
-import { Actor, Form, FormType, Game, on, once } from "@skyrim-platform/skyrim-platform";
+import { Actor, Form, FormType, Game, on, once, Ui } from "@skyrim-platform/skyrim-platform";
 import { solveForm } from "@skyrim-platform/jcontainers/JDB";
 import * as fun from "./index_fun";
 import * as consts from "./constants";
@@ -51,7 +51,15 @@ on("menuOpen", () => {
 });
 
 on("containerChanged", (event) => {
+    // Fixes an issue with leveling up triggering the container change
+    // an uncountable number of times.
+    if (Ui.isMenuOpen("LevelUp Menu")) {
+        return;
+    }
     let player = Game.getPlayer();
+    if (!player) {
+        return;
+    }
     fun.updateAmmoCount(player);
     fun.updateQuickItemCounts(player);
     fun.updatePouchCounts(player);
