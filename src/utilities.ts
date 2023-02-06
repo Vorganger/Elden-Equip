@@ -1,7 +1,7 @@
 import { Ammo, Form, FormType, Game, InputDeviceType, MagicEffect, Spell, Weapon, WeaponType } from "@skyrim-platform/skyrim-platform";
 import { addForm, count, getForm, object } from "@skyrim-platform/jcontainers/JArray";
 import { solveObj, solveObjSetter } from "@skyrim-platform/jcontainers/JDB";
-import *  as modevents from "./modEvents";
+import * as modevents from "./modEvents";
 
 // --------------
 // Form utilities
@@ -22,7 +22,11 @@ export function hasKeywordString(form: Form | null, keywordStr: String): boolean
 export function isBattleaxe(form: Form | null): boolean {
     return hasKeywordString(form, "WeapTypeBattleaxe"); }
 export function isBow(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeBow"); }
+    return (Weapon.from(form) as Weapon).getWeaponType() === WeaponType.Bow;
+}
+export function isCrossbow(form: Form | null): boolean {
+    return (Weapon.from(form) as Weapon).getWeaponType() === WeaponType.Crossbow;
+}
 export function isDagger(form: Form | null): boolean {
     return hasKeywordString(form, "WeapTypeDagger"); }
 export function isGreatsword(form: Form | null): boolean {
@@ -53,6 +57,29 @@ export function isItem2H(form: Form | null | undefined): boolean {
     }
     return false; 
 }
+// SkyUI Weapons Pack icons
+export function isClaw(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeClaw"); }
+export function isGun(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeGun"); }
+export function isHalberd(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeHalberd"); }
+export function isJavelin(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeJavelin"); }
+export function isKatana(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeKatana"); }
+export function isPike(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypePike"); }
+export function isQuarterstaff(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeQuarterstaff"); }
+export function isRapier(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeRapier"); }
+export function isScythe(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeScythe"); }
+export function isSpear(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeSpear"); }
+export function isWhip(form: Form | null): boolean {
+    return hasKeywordString(form, "WeapTypeWhip"); }
 
 export function isAmmoCompatible(weapon: Weapon | null, ammo: Ammo | null): boolean {
     if (!weapon || !ammo)
@@ -103,33 +130,23 @@ export function equip(item: Form | null, slot?: number): boolean {
     if (isItem2H(item) && !isItem2H(currentRH)) {
         unequip(currentRH, 1);
     }
-
-    switch (itemType) {
-        case FormType.Spell:
-            modevents.equipSpellPapyrus(item, slot ?? 1);
-            break;
-        case FormType.ScrollItem:
-            modevents.equipItemPapyrus(item);
-            break;
-        case FormType.Armor:
-            modevents.equipItemPapyrus(item);
-            break;
-        case FormType.Light:
-            modevents.equipItemExPapyrus(item, 2); // 2: left hand
-            break;
-        case FormType.Weapon:
-            let hand = (slot === 0) ? 2 : 1;
-            modevents.equipItemExPapyrus(item, hand);
-            break;
-        case FormType.Ammo:
-            modevents.equipItemPapyrus(item);
-            break;
-        case FormType.Potion:
-            modevents.equipItemPapyrus(item);
-            break;
-        case FormType.Shout:
-            modevents.equipShoutPapyrus(item);
-            break;
+    if (itemType === FormType.Spell) {
+        modevents.equipSpellPapyrus(item, slot ?? 1);
+    } else if (itemType === FormType.ScrollItem) {
+        modevents.equipItemPapyrus(item);
+    } else if (itemType === FormType.Armor) {
+        modevents.equipItemPapyrus(item);
+    } else if (itemType === FormType.Light) {
+        modevents.equipItemExPapyrus(item, 2); // 2: left hand
+    } else if (itemType === FormType.Weapon) {
+        let hand = (slot === 0) ? 2 : 1;
+        modevents.equipItemExPapyrus(item, hand);
+    } else if (itemType === FormType.Ammo) {
+        modevents.equipItemPapyrus(item);
+    } else if (itemType === FormType.Potion) {
+        modevents.equipItemPapyrus(item);
+    } else if (itemType === FormType.Shout) {
+        modevents.equipShoutPapyrus(item);
     }
     return true;
 }
@@ -142,29 +159,21 @@ export function unequip(item: Form | null, slot?: number): boolean {
     }
     let itemType = item.getType();
 
-    switch (itemType) {
-        case FormType.Spell:
-            modevents.unequipSpellPapyrus(item, slot ?? 1);
-            break;
-        case FormType.ScrollItem:
-            modevents.unequipItemPapyrus(item);
-            break;
-        case FormType.Armor:
-            modevents.unequipItemPapyrus(item);
-            break;
-        case FormType.Light:
-            modevents.unequipItemExPapyrus(item, 2); // 2: left hand
-            break;
-        case FormType.Weapon:
-            let hand = (slot === 0) ? 2 : 1;
-            modevents.unequipItemExPapyrus(item, hand);
-            break;
-        case FormType.Ammo:
-            modevents.unequipItemPapyrus(item);
-            break;
-        case FormType.Shout:
-            modevents.unequipShoutPapyrus(item);
-            break;
+    if (itemType === FormType.Spell) {
+        modevents.unequipSpellPapyrus(item, slot ?? 1);
+    } else if (itemType === FormType.ScrollItem) {
+        modevents.unequipItemPapyrus(item);
+    } else if (itemType === FormType.Armor) {
+        modevents.unequipItemPapyrus(item);
+    } else if (itemType === FormType.Light) {
+        modevents.unequipItemExPapyrus(item, 2); // 2: left hand
+    } else if (itemType === FormType.Weapon) {
+        let hand = (slot === 0) ? 2 : 1;
+        modevents.unequipItemExPapyrus(item, hand);
+    } else if (itemType === FormType.Ammo) {
+        modevents.unequipItemPapyrus(item);
+    } else if (itemType === FormType.Shout) {
+        modevents.unequipShoutPapyrus(item);
     }
     return true;
 }
@@ -173,13 +182,13 @@ export function unequip(item: Form | null, slot?: number): boolean {
 // JContainers utilities
 // ---------------------
 
-// ----------------------------------------------
+// ---------------------------------------------
 // readObjArrFromJCon(path)
-// path: location of the setting.
-// To be used for cycles. Returns a number array.
+// path: location of the setting
+// To be used for cycles. Returns a number array
 // The object stored in JContainers is an array
 // of forms, instead of form IDs.
-// ----------------------------------------------
+// ---------------------------------------------
 export function readObjArrFromJCon(path: string): number[] {
     let objArr = solveObj(path);
     let objLen = count(objArr);
@@ -191,12 +200,12 @@ export function readObjArrFromJCon(path: string): number[] {
     return convertedArr;
 }
 
-// -----------------------------------
+// -----------------------------
 // writeObjArrToJCon(arr, path)
 // arr: array to be added in.
-// path: location of the setting.
-// To be used for cycles.
-// -----------------------------------
+// path: location of the setting
+// To be used for cycles
+// -----------------------------
 export function writeObjArrToJCon(arr: number[], path: string) {
     let objArr = object();
     for (let i = 0; i < arr.length; i++) {

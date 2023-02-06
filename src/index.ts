@@ -9,18 +9,20 @@ once("update", () => {
 });
 
 on("loadGame", () => {
-    fun.initialize();
+    fun.initializeOnLoad();
 });
 
 on("update", () => {
-    if (!fun.isInit)
+    if (!fun.isLoaded) {
         return;
+    }
     fun.updateTime();
     fun.updateElementOpacities();
     fun.updateCycleEditorRemoveTimer();
     fun.updateExitMenuTimer();
-    if (!fun.onUpdateInterval())
+    if (!fun.onUpdateInterval()) {
         return;
+    }
     let player = Game.getPlayer();
     fun.updatePouchObjects();
     fun.updateShoutCooldown(player);
@@ -37,12 +39,13 @@ on("deathStart", (event) => {
 on("menuClose", (event) => {
     fun.updateMenuClosed();
     fun.updateWidgetVisibility();
-    // No particular event to detect changes to the MCM.
+    // No particular event to detect changes to the MCM
+    // And so, closing the Journal Menu will update the settings
     if (event.name === "Journal Menu") {
-        settings.updateMCMSettings();
+        settings.updateSettings();
         fun.updateActivateKey();
     }
-    fun.startTimer(fun.exitMenuTimer); // Starts exitMenuTimer.
+    fun.startTimer(fun.exitMenuTimer); // Starts exitMenuTimer
 });
 
 on("menuOpen", () => {
@@ -52,7 +55,7 @@ on("menuOpen", () => {
 
 on("containerChanged", (event) => {
     // Fixes an issue with leveling up triggering the container change
-    // an uncountable number of times.
+    // an uncountable number of times
     if (Ui.isMenuOpen("LevelUp Menu")) {
         return;
     }
@@ -64,101 +67,86 @@ on("containerChanged", (event) => {
     fun.updateQuickItemCounts(player);
     fun.updatePouchCounts(player);
     fun.updateGoldCount(player);
-    if (event.baseObj)
+    if (event.baseObj) {
         fun.quickItemAddPoisonEvent(event.baseObj);
+    }
 });
 
 on("equip", (event) => {
-    if (!fun.isInit || event.actor.getFormID() !== consts.PLAYER_ID)
+    if (!fun.isLoaded || event.actor.getFormID() !== consts.PLAYER_ID) {
         return;
+    }
     let player = Actor.from(event.actor);
     let equipped = Form.from(event.baseObj);
-    if (!equipped)
+    if (!equipped) {
         return;
+    }
     // Right hand
-    if (equipped !== solveForm(consts.RIGHTHAND_RECENT) &&
-        equipped === player?.getEquippedObject(1)) {
-            fun.rightHandEquipEvent(equipped);
-            return;
+    if (equipped !== solveForm(consts.RIGHTHAND_RECENT) && equipped === player?.getEquippedObject(1)) {
+        fun.rightHandEquipEvent(equipped);
     }
     // Left hand
-    if (equipped !== solveForm(consts.LEFTHAND_RECENT) &&
-        equipped === player?.getEquippedObject(0)) {
-            fun.leftHandEquipEvent(equipped);
-            return;
+    else if (equipped !== solveForm(consts.LEFTHAND_RECENT) && equipped === player?.getEquippedObject(0)) {
+        fun.leftHandEquipEvent(equipped);
     }
     // Voice
-    if (equipped !== solveForm(consts.VOICE_RECENT) &&
-        equipped === player?.getEquippedObject(2)) {
-            fun.voiceEquipEvent(equipped);
-            return;
+    else if (equipped !== solveForm(consts.VOICE_RECENT) && equipped === player?.getEquippedObject(2)) {
+        fun.voiceEquipEvent(equipped);
     }
     // Ammo
-    if (equipped !== solveForm(consts.AMMO_RECENT) &&
-        equipped.getType() === FormType.Ammo) {
-            fun.ammoEquipEvent(equipped);
-            return;
+    else if (equipped !== solveForm(consts.AMMO_RECENT) && equipped.getType() === FormType.Ammo) {
+        fun.ammoEquipEvent(equipped);
     }
     // Quick item (for cycle adding)
-    fun.equipQuickItemEvent(equipped);
+    else {
+        fun.equipQuickItemEvent(equipped);
+    }
 });
 
 
 on("unequip", (event) => {  
-    if (!fun.isInit || event.actor.getFormID() !== consts.PLAYER_ID)
+    if (!fun.isLoaded || event.actor.getFormID() !== consts.PLAYER_ID) {
         return;
+    }
     let unequipped = Form.from(event.baseObj);
-    if (!unequipped)
+    if (!unequipped) {
         return;
+    }
     let player = Actor.from(event.actor);
     // Right hand
     if (solveForm(consts.RIGHTHAND_RECENT) && !player?.getEquippedObject(1)) {
         fun.rightHandUnequipEvent();
-        return;
     }
     // Left hand
-    if (solveForm(consts.LEFTHAND_RECENT) && !player?.getEquippedObject(0)) {
+    else if (solveForm(consts.LEFTHAND_RECENT) && !player?.getEquippedObject(0)) {
         fun.leftHandUnequipEvent();
-        return;
     }
     // Voice
-    if (solveForm(consts.VOICE_RECENT) && !player?.getEquippedObject(2)) {
+    else if (solveForm(consts.VOICE_RECENT) && !player?.getEquippedObject(2)) {
         fun.voiceUnequipEvent();
-        return;
     }
     // Ammo
-    if (unequipped === solveForm(consts.AMMO_RECENT)) {
+    else if (unequipped === solveForm(consts.AMMO_RECENT)) {
         fun.ammoUnequipEvent();
-        return;
     }
 });
 
 on("buttonEvent", (event) => {
-    if (!fun.isInit || fun.playerDead || settings.disableControls || fun.exitMenuTimer.isEnabled)
+    if (!fun.isLoaded || fun.playerDead || settings.disableControls || fun.exitMenuTimer.isEnabled)
         return;
-    switch (event.code) {
-        case settings.leftKey.code:
-            fun.leftKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
-            return;
-        case settings.rightKey.code:
-            fun.rightKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
-            return;
-        case settings.upKey.code:
-            fun.upKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
-            return;
-        case settings.downKey.code:
-            fun.downKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
-            return;
-        case settings.itemUseKey.code:
-            fun.itemUseKeyEvent(event.device, event.isDown, event.isUp);
-        case settings.cycleEditorKey.code:
-            fun.cycleEditorKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
-            return;
-        case fun.activateKeyKeyboard.code:
-            fun.activateKeyEvent(event.isDown, event.isUp, event.isHeld, event.heldDuration);
-            return;
-        case fun.activateKeyGamepad.code:
-            fun.activateKeyEvent(event.isDown, event.isUp, event.isHeld, event.heldDuration);
-            return;
+    if (event.code === settings.leftKey.code) {
+        fun.leftKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
+    } if (event.code === settings.rightKey.code) {
+        fun.rightKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
+    } if (event.code === settings.upKey.code) {
+        fun.upKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
+    } if (event.code === settings.downKey.code) {
+        fun.downKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
+    } if (event.code === settings.itemUseKey.code) {
+        fun.itemUseKeyEvent(event.device, event.isDown, event.isUp);
+    } if (event.code === settings.cycleEditorKey.code) {
+        fun.cycleEditorKeyEvent(event.device, event.isDown, event.isUp, event.isHeld, event.heldDuration);
+    } if (event.code === settings.visibilityPouchButton.code) {
+        fun.visibilityPouchEvent(event.isDown, event.isUp, event.isHeld, event.heldDuration);
     }
 });

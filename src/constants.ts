@@ -3,7 +3,6 @@ export const PLAYER_ID = 0x14;
 export const PICKAXE_ID = 0xe3c16;
 export const NOTCHED_PICKAXE_ID = 0x1019d4;
 export const WOODCUTTERS_AXE_ID = 0x2f2f4;
-
 // Magic Effect IDs
 export const RESIST_FIRE_ID = 0x3eaea;
 export const RESIST_FROST_ID = 0x3eaeb;
@@ -16,12 +15,9 @@ export const RESTORE_STAMINA_ID = 0x3eb16;
 export const RESTORE_MAGICKA_ID = 0x3eb17;
 export const RESTORE_HEALTH_FOOD_ID = 0xf33cb;
 export const RESTORE_STAMINA_FOOD_ID = 0xf33cc;
-
-export const MOD_NAME = "Elden Equip";
+// Mod
 export const MOD_KEY = "elden-equip";
-export const UI_PATH = "file:///Data/Platform/UI/elden-equip-ui.html"
-export const UI_INIT_TIME = 1;
-
+export const UI_PATH = "file:///Data/Platform/UI/elden-equip-ui.html";
 // SVG file paths
 export const FLASH_IMAGE = "images/flash.svg";
 export const FLASH_ALT_IMAGE = "images/flash_alt.svg";
@@ -95,16 +91,28 @@ export const WEAPON_CROSSBOW_ICON = "images/icons/weapon/weapon_crossbow.svg";
 export const WEAPON_PICKAXE_ICON = "images/icons/weapon/weapon_pickaxe.svg";
 export const WEAPON_STAFF_ICON = "images/icons/weapon/weapon_staff.svg";
 export const WEAPON_WOODCUTTERAXE_ICON = "images/icons/weapon/weapon_woodcutteraxe.svg";
-
+// Weapon - SkyUI Weapons Pack icons
+export const WEAPON_CLAW_ICON = "images/icons/weapon/weapon_claw.svg";
+export const WEAPON_GUN_ICON = "images/icons/weapon/weapon_gun.svg";
+export const WEAPON_HALBERD_ICON = "images/icons/weapon/weapon_halberd.svg";
+export const WEAPON_JAVELIN_ICON = "images/icons/weapon/weapon_javelin.svg";
+export const WEAPON_KATANA_ICON = "images/icons/weapon/weapon_katana.svg";
+export const WEAPON_PIKE_ICON = "images/icons/weapon/weapon_pike.svg";
+export const WEAPON_QUARTERSTAFF_ICON = "images/icons/weapon/weapon_quarterstaff.svg";
+export const WEAPON_RAPIER_ICON = "images/icons/weapon/weapon_rapier.svg";
+export const WEAPON_SCYTHE_ICON = "images/icons/weapon/weapon_scythe.svg";
+export const WEAPON_SPEAR_ICON = "images/icons/weapon/weapon_spear.svg";
+export const WEAPON_WHIP_ICON = "images/icons/weapon/weapon_whip.svg";
 // JContainers keys
 export const LEFTHAND_ARRAY = `.${MOD_KEY}.lefthand-array`;
 export const RIGHTHAND_ARRAY = `.${MOD_KEY}.righthand-array`;
 export const VOICE_ARRAY = `.${MOD_KEY}.voice-array`;
-export const AMMO_ARRAY = `.${MOD_KEY}.ammo-array`;
+export const ARROW_ARRAY = `.${MOD_KEY}.arrow-array`;
+export const BOLT_ARRAY = `.${MOD_KEY}.bolt-array`;
 export const QUICKITEM_ARRAY = `.${MOD_KEY}.quickitem-array`;
 export const LEFTHAND_RECENT = `.${MOD_KEY}.lefthand-recent`;
 export const RIGHTHAND_RECENT = `.${MOD_KEY}.righthand-recent`;
 export const RIGHTHAND_ONEHANDED = `.${MOD_KEY}.righthand-onehanded`;
 export const VOICE_RECENT = `.${MOD_KEY}.voice-recent`;
-export const AMMO_RECENT = `.${MOD_KEY}.ammo-recent`;
+export const AMMO_RECENT = `.${MOD_KEY}.ammo-recent`; // arrow or bolt
 export const QUICKITEM_INDEX = `.${MOD_KEY}.quickitem-index`;

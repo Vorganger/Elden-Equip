@@ -7,8 +7,9 @@ import * as consts from "./constants";
 
 // Messages when adding or removing
 export function printCycleEditorMessage(message: string) {
-    if (!cycleEditorMessages)
+    if (!cycleEditorMessages) {
         return;
+    }
     Debug.notification(message);
 }
 
@@ -52,29 +53,22 @@ export class Cycle {
 
 export class EquipmentCycle extends Cycle {
     // slot: left hand (0), right hand (1), voice (2), ammo (3)
-    // Do note that ammo (3) does not work with getEquippedObject(slot).
-    // The slot will be used to determine the saved JDB Form to use.
+    // Do note that ammo (3) does not work with getEquippedObject(slot)
+    // The slot will be used to determine the saved JDB Form to use
     slot: number;
     constructor(slot: number) {
         super();
         this.slot = slot;
-        switch (this.slot) {
-            case 0: this.name = "Left Hand"; break;
-            case 1: this.name = "Right Hand"; break;
-            case 2: this.name = "Voice"; break;
-            case 3: this.name = "Ammo"; break;
-        }
     }
     getEquippedItem(): Form | null {
-        switch (this.slot) {
-            case 0:
-                return solveForm(consts.LEFTHAND_RECENT) ?? null;
-            case 1:
-                return solveForm(consts.RIGHTHAND_RECENT) ?? null;
-            case 2:
-                return solveForm(consts.VOICE_RECENT) ?? null;
-            case 3:
-                return solveForm(consts.AMMO_RECENT) ?? null;
+        if (this.slot === 0) {
+            return solveForm(consts.LEFTHAND_RECENT) ?? null;
+        } else if (this.slot === 1) {
+            return solveForm(consts.RIGHTHAND_RECENT) ?? null;
+        } else if (this.slot === 2) {
+            return solveForm(consts.VOICE_RECENT) ?? null;
+        } else if (this.slot === 3) {
+            return solveForm(consts.AMMO_RECENT) ?? null;
         }
         return null;
     }
@@ -114,7 +108,7 @@ export class EquipmentCycle extends Cycle {
     }
     advance(): void {
         if (this.arr.length === 0) {
-            // Prevents unequipped slot from unequipping, based on settings.
+            // Prevents unequipped slot from unequipping, based on settings
             if ((!leftHandCycleUnequip && this.slot === 0) ||
                 (!rightHandCycleUnequip && this.slot === 1) ||
                 (!voiceCycleUnequip && this.slot === 2) ||
@@ -127,7 +121,7 @@ export class EquipmentCycle extends Cycle {
         }
         // Advances index
         this.index++;
-        // Prevents unequipped slot from unequipping, based on settings.
+        // Prevents unequipped slot from unequipping, based on settings
         if ((!leftHandCycleUnequip && this.slot === 0) ||
             (!rightHandCycleUnequip && this.slot === 1) ||
             (!voiceCycleUnequip && this.slot === 2) ||
@@ -161,51 +155,47 @@ export class EquipmentCycle extends Cycle {
         let equipSuccess = this.use();
         if (equipSuccess)
             return;
-        // In the case that the equip fails.
-        // Removes the failed item from the cycle.
+        // In the case that the equip fails
+        // Removes the failed item from the cycle
         this.arr.splice(this.index, 1);
         this.index--;
-        switch (this.slot) {
-            case 0:
-                writeObjArrToJCon(this.arr, consts.LEFTHAND_ARRAY);
-                break;
-            case 1:
-                writeObjArrToJCon(this.arr, consts.RIGHTHAND_ARRAY);
-                break;
-            case 2:
-                writeObjArrToJCon(this.arr, consts.VOICE_ARRAY);
-                break;
-            case 3:
-                writeObjArrToJCon(this.arr, consts.VOICE_ARRAY);
+        if (this.slot === 0) {
+            writeObjArrToJCon(this.arr, consts.LEFTHAND_ARRAY);
+        } else if (this.slot === 1) {
+            writeObjArrToJCon(this.arr, consts.RIGHTHAND_ARRAY);
+        } else if (this.slot === 2) {
+            writeObjArrToJCon(this.arr, consts.VOICE_ARRAY);
+        } else if (this.slot === 3) {
+            writeObjArrToJCon(this.arr, consts.VOICE_ARRAY);
         }
         this.advance();
     }
     add(newItemID: number): void {
         let newItemName = Game.getFormEx(newItemID)?.getName();
         if (this.arr.includes(newItemID)) {
-            printCycleEditorMessage(`${newItemName} is in the ${this.name} cycle.`);
+            printCycleEditorMessage(`${newItemName} ${settings.isInThe} ${this.name}`);
             return;
         }
         this.arr.splice(this.index + 1, 0, newItemID);
-        printCycleEditorMessage(`Added ${newItemName} to the ${this.name} cycle.`);
+        printCycleEditorMessage(`${settings.added} ${newItemName} ${settings.toThe} ${this.name}`);
     }
     remove(): void {
         let removedName = "";
         let removedIndex = -1;
-        // Removes equipped item if it exists in the array.
+        // Removes equipped item if it exists in the array
         let equippedItem = this.getEquippedItem();
         let equippedItemIndex = this.arr.indexOf(equippedItem?.getFormID() ?? 0);
         if (equippedItemIndex === -1) {
-            printCycleEditorMessage(`${equippedItem?.getName() ?? ""} does not exist in the ${this.name} cycle`);
+            printCycleEditorMessage(`${equippedItem?.getName() ?? ""} ${settings.doesNotExistInThe} ${this.name}`);
             this.use();
             return;
         }
         removedName = equippedItem?.getName() ?? "";
         removedIndex = equippedItemIndex;
-        // Removes item at the current index.
+        // Removes item at the current index
         this.arr.splice(removedIndex, 1);
-        printCycleEditorMessage(`Removed ${removedName} from the ${this.name} cycle.`);
-        // Equips/unequips, depending on the current index.
+        printCycleEditorMessage(`${settings.removed} ${removedName} ${settings.fromThe} ${this.name}`);
+        // Equips/unequips, depending on the current index
         this.use();
     }
 }
@@ -215,7 +205,6 @@ export class QuickItemCycle extends Cycle {
     offsetTwoCount: number;
     constructor() {
         super();
-        this.name = "Quick Item"
         this.offsetOneCount = 0;
         this.offsetTwoCount = 0;
     }
@@ -236,68 +225,63 @@ export class QuickItemCycle extends Cycle {
             this.index = 0;
         solveIntSetter(consts.QUICKITEM_INDEX, this.index, true);
     }
-    // - Uses the player's current health/magicka/stamina count to determine what restoration to use.
-    // - Returns true if an optimal potion would be used, but false otherwise.
+    // - Uses the player's current health/magicka/stamina count to determine what restoration to use
+    // - Returns true if an optimal potion would be used, but false otherwise
     useOptimalPotion(item: Form | null): boolean {
         // Item is not a potion.
         if (item?.getType() !== FormType.Potion) {
             return false;
         }
-        // Uses currently queued quick item to determine what the potion is.
+        // Uses currently queued quick item to determine what the potion is
         let potion = Potion.from(item);
         let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID();
         let actorValueWord = "";
-        switch (potionType) {
-            case consts.RESTORE_HEALTH_ID:
-                actorValueWord = "Health";
-                break;
-            case consts.RESTORE_MAGICKA_ID:
-                actorValueWord = "Magicka";
-                break;
-            case consts.RESTORE_STAMINA_ID:
-                actorValueWord = "Stamina";
-                break;
-            // Any other potion type.
-            default:
-                return false;
+        if (potionType === consts.RESTORE_HEALTH_ID) {
+            actorValueWord = "Health";
+        } else if (potionType === consts.RESTORE_MAGICKA_ID) {
+            actorValueWord = "Magicka";
+        } else if (potionType === consts.RESTORE_STAMINA_ID) {
+            actorValueWord = "Stamina";
+        } else { // Any other potion type
+            return false;
         }
-        // Only continues depending on what the potion type is and the settings.
+        // Only continues depending on what the potion type is and the settings
         if ((actorValueWord === "Health" && settings.useOptimalHealthPotion) ||
             (actorValueWord === "Magicka" && settings.useOptimalMagickaPotion) ||
             (actorValueWord === "Stamina" && settings.useOptimalStaminaPotion))
         {
-            let optimalPotion = null; // Optimal potion to use.
-            // Smallest value would indicate the most optimal potion.
+            let optimalPotion = null; // Optimal potion to use
+            // Smallest value would indicate the most optimal potion
             let optimalDiff = null;
             let player = Game.getPlayer();
-            // Player health/magicka/stamina.
+            // Player health/magicka/stamina
             let playerAVDiff = (player?.getActorValueMax(actorValueWord) ?? 0) - (player?.getActorValue(actorValueWord) ?? 0);
-            // Finds optimal potion to use.
+            // Finds optimal potion to use
             let playerNumItems = player?.getNumItems() ?? 0;
             for (let i = 0; i < playerNumItems; i++) {
                 let playerItem = player?.getNthForm(i) ?? null;
-                // Item is not a potion.
+                // Item is not a potion
                 if (item?.getType() !== FormType.Potion)
                     continue;
                 let potion = Potion.from(playerItem);
                 let type = potion?.getNthEffectMagicEffect(0)?.getFormID();
-                // Potion does not match the specified type.
+                // Potion does not match the specified type
                 if (potionType !== type)
                     continue;
                 let potionMaginitude = potion?.getNthEffectMagnitude(0) ?? 0;
                 let tempDiff = Math.abs(potionMaginitude - playerAVDiff);
                 // If this is the first time computing optimalDiff OR
-                // tempDiff is a smaller (more optimal) value.
+                // tempDiff is a smaller (more optimal) value
                 if (!optimalDiff || optimalDiff > tempDiff) {
                     optimalDiff = tempDiff;
                     optimalPotion = potion;
                 }
             }
-            // Use optimal potion in the end.
+            // Use optimal potion in the end
             equip(optimalPotion);
             return true;
         }
-        // Assuming only restoration potions have been used.
+        // Assuming only restoration potions have been used
         return false;
     }
     use(): void {
@@ -307,7 +291,7 @@ export class QuickItemCycle extends Cycle {
         let item = Game.getFormEx(this.getItemId());
         if (!item)
             return;
-        // Returning true indicates an optimal potion was used.
+        // Returning true indicates an optimal potion was used
         if (this.useOptimalPotion(item))
             return;
         if (!player.isEquipped(item))
@@ -321,7 +305,7 @@ export class QuickItemCycle extends Cycle {
         if (itemType !== FormType.Potion && itemType !== FormType.Armor)
             return;
         if (this.arr.includes(itemID)) {
-            printCycleEditorMessage(`${item?.getName()} is in the ${this.name} cycle.`);
+            printCycleEditorMessage(`${item?.getName()} ${settings.isInThe} ${this.name}`);
             return;
         }
         if (this.index >= this.arr.length) {
@@ -332,12 +316,12 @@ export class QuickItemCycle extends Cycle {
         // Advances index
         if (this.arr.length >= 1)
             this.index++;
-        printCycleEditorMessage(`Added ${Game.getFormEx(itemID)?.getName()} to the ${this.name} cycle.`);
+        printCycleEditorMessage(`${settings.added} ${Game.getFormEx(itemID)?.getName()} ${settings.toThe} ${this.name}`);
     }
     remove(): void {
         let itemID = this.getItemId();
         if (!itemID) {
-            printCycleEditorMessage(`Cannot remove empty slot from the ${this.name} cycle.`);
+            printCycleEditorMessage(`${settings.doesNotExistInThe} ${this.name}`);
             return;
         }
         if (this.arr.length === 0 || this.index >= this.arr.length)
@@ -346,6 +330,6 @@ export class QuickItemCycle extends Cycle {
         // In case the last index was deleted
         if (this.index >= this.arr.length)
             this.index = 0;
-        printCycleEditorMessage(`Removed ${Game.getFormEx(itemID)?.getName()} from the ${this.name} cycle.`);
+        printCycleEditorMessage(`${settings.removed} ${Game.getFormEx(itemID)?.getName()} ${settings.fromThe} ${this.name}`);
     }
 }

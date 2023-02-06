@@ -8,10 +8,6 @@ export function isMenuClosed(): boolean {
     return !Utility.isInMenuMode() && (!Ui.isMenuOpen("Crafting Menu") && !Ui.isMenuOpen("Fader Menu") && !Ui.isMenuOpen("Dialogue Menu") || (Ui.isMenuOpen("LootMenu")));
 }
 
-// ----------------------------------------
-// Simplified JavaScript browser functions.
-// ----------------------------------------
-
 export function changeOpacity(element: string, time: number, delay: number, opacity: number) {
     if (settings.widgetDisableOpacityTransitions)
         time = 0;
@@ -91,44 +87,32 @@ function updateIconSpell(item: Form, iconElement: string) {
     let spell = Spell.from(item);
     let effect = MagicEffect.from(spell?.getNthEffectMagicEffect(0) ?? null);
     let effectResistance = effect?.getResistance();
-    // Since voice spells do not take up any magicka.
+    // Since voice spells do not take up any magicka
     if (spell?.getMagickaCost() === 0) {
         changeSource(iconElement, consts.VOICE_POWER_ICON);
         return;
     }
-    // LH/RH magic spells.
+    // LH/RH magic spells
     utils.getSpellSchool(spell).then(function(result) {
-        switch (result) {
-            case "Alteration":
-                changeSource(iconElement, consts.MAGIC_ALTERATION_ICON);
-                break;
-            case "Conjuration":
-                changeSource(iconElement, consts.MAGIC_CONJURATION_ICON);
-                break;
-            case "Destruction":
-                changeSource(iconElement, consts.MAGIC_DESTRUCTION_ICON);
-                if (effectResistance === "ElectricResist") {
-                    changeSource(`${iconElement}-secondary`, consts.EFFECT_ELECTRIC_ICON);
-                    break;
-                }
-                if (effectResistance === "FireResist") {
-                    changeSource(`${iconElement}-secondary`, consts.EFFECT_FIRE_ICON);
-                    break;
-                }
-                if (effectResistance === "FrostResist") {
-                    changeSource(`${iconElement}-secondary`, consts.EFFECT_FROST_ICON);
-                    break;
-                }
-                break;
-            case "Illusion":
-                changeSource(iconElement, consts.MAGIC_ILLUSION_ICON);
-                break;
-            case "Restoration":
-                changeSource(iconElement, consts.MAGIC_RESTORATION_ICON);
-                break;
-            default:
-                changeSource(iconElement, "");
-                break;
+        if (result === "Alteration") {
+            changeSource(iconElement, consts.MAGIC_ALTERATION_ICON);
+        } else if (result === "Conjuration") {
+            changeSource(iconElement, consts.MAGIC_CONJURATION_ICON);
+        } else if (result === "Destruction") {
+            changeSource(iconElement, consts.MAGIC_DESTRUCTION_ICON);
+            if (effectResistance === "ElectricResist") {
+                changeSource(`${iconElement}-secondary`, consts.EFFECT_ELECTRIC_ICON);
+            } else if (effectResistance === "FireResist") {
+                changeSource(`${iconElement}-secondary`, consts.EFFECT_FIRE_ICON);
+            } else if (effectResistance === "FrostResist") {
+                changeSource(`${iconElement}-secondary`, consts.EFFECT_FROST_ICON);
+            }
+        } else if (result === "Illusion") {
+            changeSource(iconElement, consts.MAGIC_ILLUSION_ICON);
+        } else if (result === "Restoration") {
+            changeSource(iconElement, consts.MAGIC_RESTORATION_ICON);
+        } else {
+            changeSource(iconElement, "");
         }
     });
 }
@@ -137,194 +121,172 @@ function updateIconArmor(item: Form, iconElement: string) {
     let armor = Armor.from(item);
     let weightClass = armor?.getWeightClass(); // 0: light, 1: heavy, 2: neither
     let slotMask = armor?.getSlotMask();
-    switch (slotMask) {
-        // For some strange reason, helmet is not found in the SlotMask enum.
-        // Here are their values:
-        case 4098: // head
-            if (weightClass === 0)
-                changeSource(iconElement, consts.ARMOR_HEAD_LIGHT_ICON);
-            if (weightClass === 1)
+    // For some strange reason, helmet is not found in the SlotMask enum
+    // Here are their values:
+    if (slotMask === 4098) { // head
+        if (weightClass === 0) {
+            changeSource(iconElement, consts.ARMOR_HEAD_LIGHT_ICON);
+        } else if (weightClass === 1) {
             changeSource(iconElement, consts.ARMOR_HEAD_HEAVY_ICON);
-            if (weightClass === 2)
-                changeSource(iconElement, consts.ARMOR_HEAD_ICON);
-            return;
-        case 12291: // head (heavy)
-            changeSource(iconElement, consts.ARMOR_HEAD_HEAVY_ICON);
-            return;
-        case SlotMask.Body:
-            if (weightClass === 0)
-                changeSource(iconElement, consts.ARMOR_BODY_LIGHT_ICON);
-            if (weightClass === 1)
-                changeSource(iconElement, consts.ARMOR_BODY_HEAVY_ICON);
-            if (weightClass === 2)
-                changeSource(iconElement, consts.ARMOR_BODY_ICON);
-            break;
-        case SlotMask.Hands:
-            if (weightClass === 0)
-                changeSource(iconElement, consts.ARMOR_HANDS_LIGHT_ICON);
-            if (weightClass === 1)
-                changeSource(iconElement, consts.ARMOR_HANDS_HEAVY_ICON);
-            if (weightClass === 2)
-                changeSource(iconElement, consts.ARMOR_HANDS_ICON);
-            break;
-        case SlotMask.Amulet:
-            changeSource(iconElement, consts.ARMOR_AMULET_ICON);
-            break;
-        case SlotMask.Ring:
-            changeSource(iconElement, consts.ARMOR_RING_ICON);
-            break;
-        case SlotMask.Feet:
-            if (weightClass === 0)
-                changeSource(iconElement, consts.ARMOR_FEET_LIGHT_ICON);
-            if (weightClass === 1)
-                changeSource(iconElement, consts.ARMOR_FEET_HEAVY_ICON);
-            if (weightClass === 2)
-                changeSource(iconElement, consts.ARMOR_FEET_ICON);
-            break;
-        case SlotMask.Shield:
-            if (weightClass === 0)
-                changeSource(iconElement, consts.ARMOR_SHIELD_LIGHT_ICON);
-            if (weightClass === 1)
-                changeSource(iconElement, consts.ARMOR_SHIELD_HEAVY_ICON);
-            break;
-        case SlotMask.Circlet:
-            changeSource(iconElement, consts.ARMOR_CIRCLET_ICON);
-            break;
-        default:
-            changeSource(iconElement, consts.ARMOR_ICON);
+        } else if (weightClass === 2) {
+            changeSource(iconElement, consts.ARMOR_HEAD_ICON);
+        }
+    } else if (slotMask === 12291) { // head (heavy)
+        changeSource(iconElement, consts.ARMOR_HEAD_HEAVY_ICON);
+    } else if (slotMask === SlotMask.Body) {
+        if (weightClass === 0) {
+            changeSource(iconElement, consts.ARMOR_BODY_LIGHT_ICON);
+        } else if (weightClass === 1) {
+            changeSource(iconElement, consts.ARMOR_BODY_HEAVY_ICON);
+        } else if (weightClass === 2) {
+            changeSource(iconElement, consts.ARMOR_BODY_ICON);
+        }
+    } else if (slotMask === SlotMask.Hands) {
+        if (weightClass === 0) {
+            changeSource(iconElement, consts.ARMOR_HANDS_LIGHT_ICON);
+        } else if (weightClass === 1) {
+            changeSource(iconElement, consts.ARMOR_HANDS_HEAVY_ICON);
+        } else if (weightClass === 2) {
+            changeSource(iconElement, consts.ARMOR_HANDS_ICON);
+        }
+    } else if (slotMask === SlotMask.Amulet) {
+        changeSource(iconElement, consts.ARMOR_AMULET_ICON);
+    } else if (slotMask === SlotMask.Ring) {
+        changeSource(iconElement, consts.ARMOR_RING_ICON);
+    } else if (slotMask === SlotMask.Feet) {
+        if (weightClass === 0) {
+            changeSource(iconElement, consts.ARMOR_FEET_LIGHT_ICON);
+        } else if (weightClass === 1) {
+            changeSource(iconElement, consts.ARMOR_FEET_HEAVY_ICON);
+        } else if (weightClass === 2) {
+            changeSource(iconElement, consts.ARMOR_FEET_ICON);
+        }
+    } else if (slotMask === SlotMask.Shield) {
+        if (weightClass === 0)
+            changeSource(iconElement, consts.ARMOR_SHIELD_LIGHT_ICON);
+        if (weightClass === 1)
+            changeSource(iconElement, consts.ARMOR_SHIELD_HEAVY_ICON);
+    } else if (SlotMask.Circlet) {
+        changeSource(iconElement, consts.ARMOR_CIRCLET_ICON);
+    } else {
+        changeSource(iconElement, consts.ARMOR_ICON);
     }
 }
 
 function updateIconWeapon(item: Form, iconElement: string) {
-    let weapon = Weapon.from(item);
-    if (!weapon)
-        return;
-    let weaponType = weapon.getWeaponType();
-    switch (weaponType) {
-        case WeaponType.Fist:
-            break;
-        case WeaponType.Sword:
-            changeSource(iconElement, consts.WEAPON_1H_SWORD_ICON);
-            break;
-        case WeaponType.Dagger:
-            changeSource(iconElement, consts.WEAPON_1H_DAGGER_ICON);
-            break;
-        case WeaponType.WarAxe:
-            let weaponID = weapon.getFormID();
-            // Pickaxe (ancient nordic pickaxe does not have the pickaxe icon)
-            if (weaponID === consts.NOTCHED_PICKAXE_ID ||
-                weaponID === consts.PICKAXE_ID) {
-                    changeSource(iconElement, consts.WEAPON_PICKAXE_ICON);
-                    break;
-            }
-            // Woodcutter's axe
-            if (weaponID === consts.WOODCUTTERS_AXE_ID) {
-                changeSource(iconElement, consts.WEAPON_WOODCUTTERAXE_ICON);
-                break;
-            }
-            // Any other war axe
+    // SkyUI Weapons Pack icons
+    if (utils.isClaw(item)) {
+        changeSource(iconElement, consts.WEAPON_CLAW_ICON);
+    } else if (utils.isGun(item)) {
+        changeSource (iconElement, consts.WEAPON_GUN_ICON);
+    } else if (utils.isHalberd(item)) {
+        changeSource(iconElement, consts.WEAPON_HALBERD_ICON);
+    } else if (utils.isJavelin(item)) {
+        changeSource(iconElement, consts.WEAPON_JAVELIN_ICON);
+    } else if (utils.isKatana(item)) {
+        changeSource(iconElement, consts.WEAPON_KATANA_ICON);
+    } else if (utils.isPike(item)) {
+        changeSource(iconElement, consts.WEAPON_PIKE_ICON);
+    } else if (utils.isQuarterstaff(item)) {
+        changeSource(iconElement, consts.WEAPON_QUARTERSTAFF_ICON);
+    } else if (utils.isRapier(item)) {
+        changeSource(iconElement, consts.WEAPON_RAPIER_ICON);
+    } else if (utils.isScythe(item)) {
+        changeSource(iconElement, consts.WEAPON_SCYTHE_ICON);
+    } else if (utils.isSpear(item)) {
+        changeSource(iconElement, consts.WEAPON_SPEAR_ICON);
+    } else if (utils.isWhip(item)) {
+        changeSource(iconElement, consts.WEAPON_WHIP_ICON);
+    } // Regular weapon icons
+    else if (utils.isBattleaxe(item)) {
+        changeSource(iconElement, consts.WEAPON_2H_BATTLEAXE_ICON);
+    } else if (utils.isBow(item)) {        
+        changeSource(iconElement, consts.WEAPON_BOW_ICON);
+    } else if (utils.isCrossbow(item)) {
+        changeSource(iconElement, consts.WEAPON_CROSSBOW_ICON);
+    } else if (utils.isDagger(item)) {
+        changeSource(iconElement, consts.WEAPON_1H_DAGGER_ICON);
+    } else if (utils.isGreatsword(item)) {
+        changeSource(iconElement, consts.WEAPON_2H_GREATSWORD_ICON);
+    } else if (utils.isMace(item)) {
+        changeSource(iconElement, consts.WEAPON_1H_MACE_ICON);
+    } else if (utils.isStaff(item)) {        
+        changeSource(iconElement, consts.WEAPON_STAFF_ICON);
+    } else if (utils.isSword(item)) {
+        changeSource(iconElement, consts.WEAPON_1H_SWORD_ICON);
+    } else if (utils.isWarAxe(item)) {
+        let itemID = item.getFormID();
+        // Pickaxe (ancient nordic pickaxe does not have the pickaxe icon)
+        if (itemID === consts.NOTCHED_PICKAXE_ID || itemID === consts.PICKAXE_ID) {
+            changeSource(iconElement, consts.WEAPON_PICKAXE_ICON);
+        } else if (itemID === consts.WOODCUTTERS_AXE_ID) {
+            changeSource(iconElement, consts.WEAPON_WOODCUTTERAXE_ICON);
+        } else {
             changeSource(iconElement, consts.WEAPON_1H_WARAXE_ICON);
-            break;
-        case WeaponType.Mace:
-            changeSource(iconElement, consts.WEAPON_1H_MACE_ICON);
-            break;
-        case WeaponType.Greatsword:
-            changeSource(iconElement, consts.WEAPON_2H_GREATSWORD_ICON);
-            break;
-        case WeaponType.Battleaxe: 
-            if (utils.isBattleaxe(item))
-                changeSource(iconElement, consts.WEAPON_2H_BATTLEAXE_ICON);
-            if (!utils.isBattleaxe(item))
-                changeSource(iconElement, consts.WEAPON_2H_WARHAMMER_ICON);
-            break;
-        case WeaponType.Bow:
-            changeSource(iconElement, consts.WEAPON_BOW_ICON);
-            break;
-        case WeaponType.Staff:
-            changeSource(iconElement, consts.WEAPON_STAFF_ICON);
-            break;
-        case WeaponType.Crossbow:
-            changeSource(iconElement, consts.WEAPON_CROSSBOW_ICON);
-            break;
+        }
+    } else if (utils.isWarhammer(item)) {
+        changeSource(iconElement, consts.WEAPON_2H_WARHAMMER_ICON);
     }
-    let weaponEnchantment = weapon.getEnchantment();
+    let weapon = Weapon.from(item);
+    let weaponEnchantment = weapon?.getEnchantment();
     if (weaponEnchantment) {
         let weaponResistance = weaponEnchantment.getNthEffectMagicEffect(0)?.getResistance();
-        switch (weaponResistance) {
-            case "ElectricResist":
-                changeSource(`${iconElement}-secondary`, consts.EFFECT_ELECTRIC_ICON);
-                break;
-            case "FireResist":
-                changeSource(`${iconElement}-secondary`, consts.EFFECT_FIRE_ICON);
-                break;
-            case "FrostResist":
-                changeSource(`${iconElement}-secondary`, consts.EFFECT_FROST_ICON);
-                break;
-            default:
-                changeSource(`${iconElement}-secondary`, consts.EFFECT_ENCHANTMENT_ICON);
-                break;
+        if (weaponResistance === "ElectricResist") {
+            changeSource(`${iconElement}-secondary`, consts.EFFECT_ELECTRIC_ICON);
+        } else if (weaponResistance === "FireResist") {
+            changeSource(`${iconElement}-secondary`, consts.EFFECT_FIRE_ICON);
+        } else if (weaponResistance === "FrostResist") {
+            changeSource(`${iconElement}-secondary`, consts.EFFECT_FROST_ICON);
+        } else {
+            changeSource(`${iconElement}-secondary`, consts.EFFECT_ENCHANTMENT_ICON);
         }
     }
 }
 
 function updateIconAmmo(item: Form, iconElement: string) {
     let ammo = Ammo.from(item);
-    if (!ammo)
+    if (!ammo) {
         return;
-    if (ammo.isBolt())
+    } else if (ammo.isBolt()) {
         changeSource(iconElement, consts.AMMO_BOLT_ICON);
-    if (!ammo.isBolt())
+    } else {
         changeSource(iconElement, consts.AMMO_ARROW_ICON);
+    }
 }
 
 function updateIconPotion(item: Form, iconElement: string) {
     let potion = Potion.from(item);
-    switch (potion?.getNthEffectMagicEffect(0)?.getFormID()) {
-        // Resistance potions
-        case consts.RESIST_FIRE_ID:
-            changeSource(iconElement, consts.POTION_RESIST_FIRE_ICON);
-            return;
-        case consts.RESIST_FROST_ID:
-            changeSource(iconElement, consts.POTION_RESIST_FROST_ICON);
-            return;
-        case consts.RESIST_SHOCK_ID:
-            changeSource(iconElement, consts.POTION_RESIST_SHOCK_ICON);
-            return;
-        // Regeneration potions
-        case consts.REGENERATE_HEALTH_ID:
-            changeSource(iconElement, consts.POTION_HEALTH_ICON);
-            return;
-        case consts.REGENERATE_STAMINA_ID:
-            changeSource(iconElement, consts.POTION_STAMINA_ICON);
-            return;
-        case consts.REGENERATE_MAGICKA_ID:
-            changeSource(iconElement, consts.POTION_MAGICKA_ICON);
-            return;
-        // Restoration potions
-        case consts.RESTORE_HEALTH_ID:
-            changeSource(iconElement, consts.POTION_HEALTH_ICON);
-            return;
-        case consts.RESTORE_STAMINA_ID:
-            changeSource(iconElement, consts.POTION_STAMINA_ICON);
-            return;
-        case consts.RESTORE_MAGICKA_ID:
-            changeSource(iconElement, consts.POTION_MAGICKA_ICON);
-            return;
-        // Restoration foods
-        case consts.RESTORE_HEALTH_FOOD_ID:
-            changeSource(iconElement, consts.POTION_FOOD_ICON);
-            return;
-        case consts.RESTORE_STAMINA_FOOD_ID:
-            changeSource(iconElement, consts.POTION_ALCOHOL_ICON);
-            return;
+    let potionTypeID = potion?.getNthEffectMagicEffect(0)?.getFormID();
+    // Resistance potions
+    if (potionTypeID === consts.RESIST_FIRE_ID) {
+        changeSource(iconElement, consts.POTION_RESIST_FIRE_ICON);
+    } else if (potionTypeID === consts.RESIST_FROST_ID) {
+        changeSource(iconElement, consts.POTION_RESIST_FROST_ICON);
+    } else if (potionTypeID === consts.RESIST_SHOCK_ID) {
+        changeSource(iconElement, consts.POTION_RESIST_SHOCK_ICON);
+    }
+    // Regeneration/restoration potions
+    else if (potionTypeID === consts.REGENERATE_HEALTH_ID || potionTypeID === consts.RESTORE_HEALTH_ID) {
+        changeSource(iconElement, consts.POTION_HEALTH_ICON);
+    } else if (potionTypeID === consts.REGENERATE_STAMINA_ID || potionTypeID === consts.RESTORE_STAMINA_ID) {
+        changeSource(iconElement, consts.POTION_STAMINA_ICON);
+    } else if (potionTypeID === consts.REGENERATE_MAGICKA_ID || potionTypeID === consts.RESTORE_MAGICKA_ID) {
+        changeSource(iconElement, consts.POTION_MAGICKA_ICON);
+    }
+    // Restoration foods
+    else if (potionTypeID === consts.RESTORE_HEALTH_FOOD_ID) {
+        changeSource(iconElement, consts.POTION_FOOD_ICON);
+    } else if (potionTypeID === consts.RESTORE_STAMINA_FOOD_ID) {
+        changeSource(iconElement, consts.POTION_ALCOHOL_ICON);
     }
     // Poisons
-    if (potion?.isPoison()) {
+    else if (potionTypeID === potion?.isPoison()) {
         changeSource(iconElement, consts.POTION_POISON_ICON);
-        return;
     }
     // Generic potion
-    changeSource(iconElement, consts.POTION_ICON);
+    else {
+        changeSource(iconElement, consts.POTION_ICON);
+    }
 }
 
 function updateIcon(item: Form | null, iconElement: string) {
@@ -337,39 +299,30 @@ function updateIcon(item: Form | null, iconElement: string) {
         return;
     }
     // Sets main icon
-    switch (item.getType()) {
-        case FormType.Spell:
-            updateIconSpell(item, iconElement);
-            return;
-        case FormType.ScrollItem:
-            changeSource(iconElement, consts.ITEM_SCROLL_ICON);
-            return;
-        case FormType.Armor:
-            updateIconArmor(item, iconElement);
-            return;
-        case FormType.Light:
-            changeSource(iconElement, consts.ITEM_TORCH_ICON);
-            return;
-        case FormType.Weapon:
-            updateIconWeapon(item, iconElement);
-            return;
-        case FormType.Ammo:
-            updateIconAmmo(item, iconElement);
-            return;
-        case FormType.Potion:
-            updateIconPotion(item, iconElement);
-            return;
-        case FormType.Shout:
-            changeSource(iconElement, consts.VOICE_SHOUT_ICON);
-            return;
+    let itemType = item.getType();
+    if (itemType === FormType.Spell) {
+        updateIconSpell(item, iconElement);
+    } else if (itemType === FormType.ScrollItem) {
+        changeSource(iconElement, consts.ITEM_SCROLL_ICON);
+    } else if (itemType === FormType.Armor) {
+        updateIconArmor(item, iconElement);
+    } else if (itemType === FormType.Light) {
+        changeSource(iconElement, consts.ITEM_TORCH_ICON);
+    } else if (itemType === FormType.Weapon) {
+        updateIconWeapon(item, iconElement);
+    } else if (itemType === FormType.Ammo) {
+        updateIconAmmo(item, iconElement);
+    } else if (itemType === FormType.Potion) {
+        updateIconPotion(item, iconElement);
+    } else if (itemType === FormType.Shout) {
+        changeSource(iconElement, consts.VOICE_SHOUT_ICON);
     }
 }
 
 function updateIconOpacity(item: Form | null, iconElement: string) {
     // Special case for quick item icons (including offset icons) to have
-    // the optimal potion icon opacities be changed.
-    if (item?.getType() === FormType.Potion &&
-        (iconElement === "quick-item-icon" || iconElement === "quick-item-offset-1-icon" || iconElement === "quick-item-offset-2-icon"))
+    // the optimal potion icon opacities be changed
+    if (item?.getType() === FormType.Potion && (iconElement === "quick-item-icon" || iconElement === "quick-item-offset-1-icon" || iconElement === "quick-item-offset-2-icon"))
     {
         let potion = Potion.from(item);
         let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID() ?? 0;
@@ -424,42 +377,39 @@ function updateLeftHandIconOpacity(currentRH: Form | null) {
 
 // Updates icon and name of specified slot, given a Form object (i.e. equipped item)
 export function updateEquippedItemWidget(slot: number, item: Form | null) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
+    }
     let elementPrefix: string;
-    switch (slot) {
-        case 0:
-            elementPrefix = "left-hand";
-            break;
-        case 1:
-            elementPrefix = "right-hand";
-            updateLeftHandIconOpacity(item);
-            break;
-        case 2:
-            elementPrefix = "voice";
-            break;
-        default:
-            return;
+    if (slot === 0) {
+        elementPrefix = "left-hand";
+    } else if (slot === 1) {
+        elementPrefix = "right-hand";
+        updateLeftHandIconOpacity(item);
+    } else if (slot === 2) {
+        elementPrefix = "voice";
+    } else { // Not a valid equipment item
+        return;
     }
     updateIcon(item, `${elementPrefix}-icon`);
     changeTextContent(`${elementPrefix}-name`, item?.getName() ?? "");
 }
 
-// Used for optimal restoration potions option.
-// Could be moved to utils.ts instead.
+// Used for optimal restoration potions option
+// Could be moved to utils.ts instead
 function getTotalPotionTypeCount(potionTypeID: number): number {
     let player = Game.getPlayer();
     let playerNumItems = player?.getNumItems() ?? 0;
     let potionTypeCount = 0;
     for (let i = 0; i < playerNumItems; i++) {
         let item = player?.getNthForm(i);
-        // Item is not a potion.
+        // Item is not a potion
         if (item?.getType() !== FormType.Potion)
             continue;
         let potion = Potion.from(item);
         if (potion) {
             let type = potion?.getNthEffectMagicEffect(0)?.getFormID();
-            // Item does not match the type.
+            // Item does not match the type
             if (potionTypeID !== type)
                 continue;
             potionTypeCount += player?.getItemCount(potion) ?? 0;
@@ -468,30 +418,30 @@ function getTotalPotionTypeCount(potionTypeID: number): number {
     return potionTypeCount;
 }
 
-// - This is to be used with the optimal restoration potions option.
+// - This is to be used with the optimal restoration potions option
 // - Updates the name to be "Potion (Health/Magicka/Stamina) Restoration"
-//   and the count to be the total count of restoration potions of that type.
-// - The return type determines whether or not to use the Form name/count.
-//   For instance, true would indicate not to update.
+//   and the count to be the total count of restoration potions of that type
+// - The return type determines whether or not to use the Form name/count
+//   For instance, true would indicate not to update
 export function updateOptimalPotionQuickItemWidget(item: Form | null): boolean {
     updateIconOpacity(item, "quick-item-icon");
     let potion = Potion.from(item);
-    let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID(); // Health/magicka/stamina restoration potion.
-    // Cases to update the quick item widget, depending on the potion type.
+    let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID(); // Health/magicka/stamina restoration potion
+    // Cases to update the quick item widget, depending on the potion type
     if (potionType === consts.RESTORE_HEALTH_ID && settings.useOptimalHealthPotion) {
-        changeTextContent("quick-item-name", "Potion of Health Restoration");
+        changeTextContent("quick-item-name", settings.potionOfHealthRestoration);
         let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_HEALTH_ID);
         changeTextContent("quick-item-count", potionTypeCount.toString());
         return true;
     }
     if (potionType === consts.RESTORE_MAGICKA_ID && settings.useOptimalMagickaPotion) {
-        changeTextContent("quick-item-name", "Potion of Magicka Restoration");
+        changeTextContent("quick-item-name", settings.potionOfMagickaRestoration);
         let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_MAGICKA_ID);
         changeTextContent("quick-item-count", potionTypeCount.toString());
         return true;
     }
     if (potionType === consts.RESTORE_STAMINA_ID && settings.useOptimalStaminaPotion) {
-        changeTextContent("quick-item-name", "Potion of Stamina Restoration");
+        changeTextContent("quick-item-name", settings.potionOfStaminaRestoration);
         let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_STAMINA_ID);
         changeTextContent("quick-item-count", potionTypeCount.toString());
         return true;
@@ -503,7 +453,7 @@ export function updateOptimalPotionQuickItemWidget(item: Form | null): boolean {
 export function updateQuickItemWidget(item: Form | null, firstNextItem: Form | null, secondNextItem: Form | null) {
     if (settings.hideWidgets)
         return;
-    // Keeps optimal restoration potions and regular Form objects separate.
+    // Keeps optimal restoration potions and regular Form objects separate
     if (!updateOptimalPotionQuickItemWidget(item)) {
         changeTextContent("quick-item-name", item?.getName() ?? "");
         updateItemCount("quick-item-count", "quick-item-icon", item);
@@ -532,15 +482,14 @@ export function updatePouchWidget(item: Form | null, pouchIndex: number) {
     if (settings.hideWidgets)
         return;
     let elementPrefix = "";
-    switch (pouchIndex) {
-        case 0:
-            elementPrefix = "up-pouch"; break;
-        case 1:
-            elementPrefix = "right-pouch"; break;
-        case 2:
-            elementPrefix = "left-pouch"; break;
-        case 3:
-            elementPrefix = "down-pouch"; break;
+    if (pouchIndex === 0) {
+        elementPrefix = "left-pouch";
+    } else if (pouchIndex === 1) {
+        elementPrefix = "up-pouch";
+    } else if (pouchIndex === 2) {
+        elementPrefix = "right-pouch";
+    } else if (pouchIndex === 3) {
+        elementPrefix = "down-pouch";
     }
     changeTextContent(`${elementPrefix}-name`, item?.getName() ?? "");
     updateItemCount(`${elementPrefix}-count`, `${elementPrefix}-icon`, item);
@@ -574,7 +523,7 @@ export async function updateAmmoWidget() {
         ammoCountStr = ammoCount.toString();
     }
     changeTextContent("ammo-count", ammoCountStr);
-    // Updates icon opacity based on ammo and weapon are compatibility.
+    // Updates icon opacity depending on weapon and ammo compatibility
     let weapon = Weapon.from(player?.getEquippedObject(1) ?? null);
     if (utils.isAmmoCompatible(weapon, Ammo.from(ammo))) {
         changeOpacity("ammo-icon", 0, 0, 1);
@@ -637,11 +586,11 @@ export function updateGoldCount(goldCount: number) {
     changeTextContent("player-gold-count", goldCount.toString());
 }
 
-// ----------------------------------------------
+// ---------------------------------------------
 // goldCountAnimation(goldDelta)
-// goldDelta: change in gold count.
-// Plays a count animation of added/removed gold.
-// ----------------------------------------------
+// goldDelta: change in gold count
+// Plays a count animation of added/removed gold
+// ---------------------------------------------
 export async function goldCountAnimation(goldDelta: number) {
     if (settings.hideWidgets)
         return;

@@ -1,11 +1,9 @@
 import * as sp from "@skyrim-platform/skyrim-platform";
+import { settings } from "@skyrim-platform/skyrim-platform";
 import { setObj, solveObjSetter } from "@skyrim-platform/jcontainers/JDB";
-import { LEFTHAND_ARRAY, RIGHTHAND_ARRAY, VOICE_ARRAY, AMMO_ARRAY, QUICKITEM_ARRAY, MOD_KEY, MOD_NAME } from "./constants";
+import { LEFTHAND_ARRAY, RIGHTHAND_ARRAY, VOICE_ARRAY, ARROW_ARRAY, BOLT_ARRAY, QUICKITEM_ARRAY, MOD_KEY } from "./constants";
 import { initWidgets, initVariables, printCyclesConsole, resetCyclesFunc } from "./index_fun"
 import { convertKeyValue, key }  from "./utilities";
-
-// MCM settings.
-// Everything in 1.1.0 and beyond will depend on the MCM (made using MCM Helper).
 
 // Controls - Buttons
 export let upKey: key;
@@ -14,6 +12,7 @@ export let leftKey: key;
 export let rightKey: key;
 export let itemUseKey: key;
 export let cycleEditorKey: key;
+export let visibilityPouchButton: key;
 // Controls - Hold Times
 export let cycleEditorHoldTime: number;
 export let pouchAccessHoldTime: number;
@@ -22,7 +21,6 @@ export let dualCastHoldTime: number;
 export let useQuickItemAltHoldTime: number;
 // Controls - Control Options
 export let disableControls: boolean;
-
 // Equipping - Unequip Slots
 export let leftHandCycleUnequip: boolean;
 export let rightHandCycleUnequip: boolean;
@@ -38,14 +36,15 @@ export let cycleEditorAddPotion: boolean;
 // Equipping - Hold Options
 export let leftHandHoldDualCast: boolean;
 export let rightHandHoldDualCast: boolean;
-export let useQuickItemAlt: boolean;
+export let quickItemUse: number;
 // Equipping - Optimal Potions
 export let useOptimalHealthPotion: boolean;
 export let useOptimalMagickaPotion: boolean;
 export let useOptimalStaminaPotion: boolean;
 // Equipping - Pouch
 export let pouchOffset: number;
-
+// Equipping - Unequip Ammo
+export let unequipAmmo: boolean;
 // Widget - Position
 export let widgetEquipmentX: number;
 export let widgetEquipmentY: number;
@@ -65,8 +64,7 @@ export let hideGoldWidget: boolean;
 // Widget - Dynamic Visibility
 export let widgetDynamicVisibility: boolean;
 export let widgetDVOnCombat: boolean;
-export let widgetDVOnActivate: boolean;
-
+export let widgetDVOnButtonPress: boolean;
 // Misc - Messages
 export let initMessage: boolean;
 export let cycleEditorMessages: boolean;
@@ -74,9 +72,59 @@ export let cycleEditorMessages: boolean;
 export let printCycles: boolean;
 export let resetCycles: boolean;
 export let uninstallMod: boolean;
+// From elden-equip-settings.txt
+// Not necessarily settings, but strings for translations
+export let cycleEditorOpened: string;
+export let cycleEditorClosed: string;
+export let added: string;
+export let removed: string;
+export let isInThe: string;
+export let toThe: string;
+export let doesNotExistInThe: string;
+export let fromThe: string;
+export let leftHandCycle: string;
+export let rightHandCycle: string;
+export let voiceCycle: string;
+export let arrowCycle: string;
+export let boltCycle: string;
+export let quickItemCycle: string;
+export let potionOfHealthRestoration: string;
+export let potionOfMagickaRestoration: string;
+export let potionOfStaminaRestoration: string;
+export let resetCycleText: string;
+export let uninstallText: string;
+export let initializationText: string;
 
-// Used for initialization and changing the settings during a play session.
-export function updateMCMSettings() {
+// Used for updating strings from the elden-equip-settings.txt file
+export function updateStrings() {
+    // Strings - cycle editor
+    cycleEditorOpened = settings["elden-equip"]["cycleEditorOpened"] as string;
+    cycleEditorClosed = settings["elden-equip"]["cycleEditorClosed"] as string;
+    added = settings["elden-equip"]["added"] as string;
+    removed = settings["elden-equip"]["removed"] as string;
+    isInThe = settings["elden-equip"]["isInThe"] as string;
+    toThe = settings["elden-equip"]["toThe"] as string;
+    doesNotExistInThe = settings["elden-equip"]["doesNotExistInThe"] as string;
+    fromThe = settings["elden-equip"]["fromThe"] as string;
+    // Strings - cycle names
+    leftHandCycle = settings["elden-equip"]["leftHandCycle"] as string;
+    rightHandCycle = settings["elden-equip"]["rightHandCycle"] as string;
+    voiceCycle = settings["elden-equip"]["voiceCycle"] as string;
+    arrowCycle = settings["elden-equip"]["arrowCycle"] as string;
+    boltCycle = settings["elden-equip"]["boltCycle"] as string;
+    quickItemCycle = settings["elden-equip"]["quickItemCycle"] as string;
+    // Strings - potions
+    potionOfHealthRestoration = settings["elden-equip"]["potionOfHealthRestoration"] as string;
+    potionOfMagickaRestoration = settings["elden-equip"]["potionOfMagickaRestoration"] as string;
+    potionOfStaminaRestoration = settings["elden-equip"]["potionOfStaminaRestoration"] as string;
+    // Strings - messages
+    resetCycleText = settings["elden-equip"]["resetCycleText"] as string;
+    uninstallText = settings["elden-equip"]["uninstallText"] as string;
+    initializationText = settings["elden-equip"]["initializationText"] as string;
+}
+
+// Used for initialization and changing the settings during a play session
+export function updateSettings() {
     // Controls - Buttons
     upKey = convertKeyValue((sp as any).MCM.GetModSettingInt("EldenEquip", "uUpButton:Buttons"));
     downKey = convertKeyValue((sp as any).MCM.GetModSettingInt("EldenEquip", "uDownButton:Buttons"));
@@ -84,6 +132,7 @@ export function updateMCMSettings() {
     rightKey = convertKeyValue((sp as any).MCM.GetModSettingInt("EldenEquip", "uRightButton:Buttons"));
     itemUseKey = convertKeyValue((sp as any).MCM.GetModSettingInt("EldenEquip", "uItemUseButton:Buttons"));
     cycleEditorKey = convertKeyValue((sp as any).MCM.GetModSettingInt("EldenEquip", "uCycleEditorButton:Buttons"));
+    visibilityPouchButton = convertKeyValue((sp as any).MCM.GetModSettingInt("EldenEquip", "uVisibilityPouchButton:Buttons"));
     // Controls - Hold Times
     cycleEditorHoldTime = ((sp as any).MCM.GetModSettingFloat("EldenEquip", "fCycleEditor:HoldTimes"));
     pouchAccessHoldTime = ((sp as any).MCM.GetModSettingFloat("EldenEquip", "fPouchAccess:HoldTimes"));
@@ -92,7 +141,6 @@ export function updateMCMSettings() {
     useQuickItemAltHoldTime = ((sp as any).MCM.GetModSettingFloat("EldenEquip", "fUseQuickItemAlt:HoldTimes"));
     // Controls - Control Options
     disableControls = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bDisableControls:ControlOptions"));
-
     // Equipping - Unequip Slots
     leftHandCycleUnequip = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bLeftHandCycleUnequip:UnequipSlots"));
     rightHandCycleUnequip = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bRightHandCycleUnequip:UnequipSlots"));
@@ -108,14 +156,15 @@ export function updateMCMSettings() {
     // Equipping - Hold Options
     leftHandHoldDualCast = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bLeftHandHoldDualCast:HoldOptions"));
     rightHandHoldDualCast = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bRightHandHoldDualCast:HoldOptions"));
-    useQuickItemAlt = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUseQuickItemAlt:HoldOptions"));
-    // Equipping - Optimal Potions
-    useOptimalHealthPotion = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUseOptimalHealthPotion:OptimalPotions"));
-    useOptimalMagickaPotion = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUseOptimalMagickaPotion:OptimalPotions"));
-    useOptimalStaminaPotion = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUseOptimalStaminaPotion:OptimalPotions"));
+    // Equipping - Quick Items
+    quickItemUse = ((sp as any).MCM.GetModSettingInt("EldenEquip", "uQuickItemUse:QuickItems"));
+    useOptimalHealthPotion = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUseOptimalHealthPotion:QuickItems"));
+    useOptimalMagickaPotion = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUseOptimalMagickaPotion:QuickItems"));
+    useOptimalStaminaPotion = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUseOptimalStaminaPotion:QuickItems"));
     // Equipping - Pouch
     pouchOffset = ((sp as any).MCM.GetModSettingInt("EldenEquip", "uOffset:Pouch"));
-
+    // Equipping - Unequip Ammo
+    unequipAmmo = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUnequipAmmo:UnequipAmmo"));
     // Widget - Position
     widgetEquipmentX = ((sp as any).MCM.GetModSettingFloat("EldenEquip", "fEquipmentWidgetX:Position"));
     widgetEquipmentY = ((sp as any).MCM.GetModSettingFloat("EldenEquip", "fEquipmentWidgetY:Position"));
@@ -135,15 +184,14 @@ export function updateMCMSettings() {
     // Widget - Dynamic Visibility
     widgetDynamicVisibility = (hideWidgets) ? false : ((sp as any).MCM.GetModSettingBool("EldenEquip", "bEnabled:DynamicVisibility"));
     widgetDVOnCombat = (widgetDynamicVisibility) ? ((sp as any).MCM.GetModSettingBool("EldenEquip", "bShowOnCombat:DynamicVisibility")) : false;
-    widgetDVOnActivate = (widgetDynamicVisibility) ? ((sp as any).MCM.GetModSettingBool("EldenEquip", "bShowOnActivate:DynamicVisibility")) : false;
-
+    widgetDVOnButtonPress = (widgetDynamicVisibility) ? ((sp as any).MCM.GetModSettingBool("EldenEquip", "bShowOnButtonPress:DynamicVisibility")) : false;
     // Misc - Messages
     initMessage = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bInitialization:Messages"));
     cycleEditorMessages = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bCycleEditor:Messages"));
     // Misc - Debug
     printCycles = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bPrintCycles:Debug"));
     if (printCycles) {
-        // Requires initialized objects from index_fun.
+        // Requires initialized objects from index_fun
         printCyclesConsole();
         ((sp as any).MCM.SetModSettingBool("EldenEquip", "bPrintCycles:Debug", false));
     }
@@ -153,24 +201,24 @@ export function updateMCMSettings() {
         solveObjSetter(LEFTHAND_ARRAY, 0, false);
         solveObjSetter(RIGHTHAND_ARRAY, 0, false);
         solveObjSetter(VOICE_ARRAY, 0, false);
-        solveObjSetter(AMMO_ARRAY, 0, false);
+        solveObjSetter(ARROW_ARRAY, 0, false);
+        solveObjSetter(BOLT_ARRAY, 0, false);
         solveObjSetter(QUICKITEM_ARRAY, 0, false);
-        // Resets all cycle objects' arrays found in index_fun.
+        // Resets all cycle objects' arrays found in index_fun
         resetCyclesFunc();
-        sp.Debug.messageBox(`All cycles from ${MOD_NAME} have been reset.`);
+        sp.Debug.messageBox(resetCycleText);
         ((sp as any).MCM.SetModSettingBool("EldenEquip", "bResetCycles:Debug", false));
     }
     uninstallMod = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUninstallMod:Debug"));
     if (uninstallMod) {
-        // Removes Elden Equip from JContainers.
+        // Removes Elden Equip from JContainers
         setObj(MOD_KEY, 0);
-        // Resets all cycle objects' arrays found in index_fun.
+        // Resets all cycle objects' arrays found in index_fun
         resetCyclesFunc();
-        sp.Debug.messageBox(`Removed all ${MOD_NAME} information stored in JContainers. Please make a game save, exit the game, and deactivate/remove Elden Equip.`);
+        sp.Debug.messageBox(uninstallText);
         ((sp as any).MCM.SetModSettingBool("EldenEquip", "bUninstallMod:Debug", false));
     }
-
-    // Applies all settings that were normally run during hot-reloads/plugin loading.
+    // Applies all settings that were normally run during hot-reloads/plugin loading
     initVariables();
     initWidgets();
 }

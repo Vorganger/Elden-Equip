@@ -1,6 +1,7 @@
+import { Form } from "@skyrim-platform/skyrim-platform";
 import * as sp from "@skyrim-platform/skyrim-platform";
 
-export function equipItemPapyrus(item: sp.Form) {
+export function equipItemPapyrus(item: Form) {
     let handle = (sp as any).ModEvent.Create("ELDEN_EQUIP_equipItem");
     if (!handle)
         return;
@@ -8,7 +9,7 @@ export function equipItemPapyrus(item: sp.Form) {
     (sp as any).ModEvent.Send(handle);
 }
 
-export function equipItemExPapyrus(item: sp.Form, slot: number) {
+export function equipItemExPapyrus(item: Form, slot: number) {
     let handle = (sp as any).ModEvent.Create("ELDEN_EQUIP_equipItemEx");
     if (!handle)
         return;
@@ -17,8 +18,8 @@ export function equipItemExPapyrus(item: sp.Form, slot: number) {
     (sp as any).ModEvent.Send(handle);
 }
 
-export function equipSpellPapyrus(spell: sp.Form, slot: number) {
-    // Type casting is done in the modEvent.
+export function equipSpellPapyrus(spell: Form, slot: number) {
+    // Type casting is done in the mod event
     let handle = (sp as any).ModEvent.Create("ELDEN_EQUIP_equipSpell");
     if (!handle)
         return;
@@ -27,8 +28,8 @@ export function equipSpellPapyrus(spell: sp.Form, slot: number) {
     (sp as any).ModEvent.Send(handle);
 }
 
-export function equipShoutPapyrus(shout: sp.Form) {
-    // Type casting is done in the modEvent.
+export function equipShoutPapyrus(shout: Form) {
+    // Type casting is done in the mod event
     let handle = (sp as any).ModEvent.Create("ELDEN_EQUIP_equipShout");
     if (!handle)
         return;
@@ -36,7 +37,7 @@ export function equipShoutPapyrus(shout: sp.Form) {
     (sp as any).ModEvent.Send(handle);
 }
 
-export function unequipItemPapyrus(item: sp.Form) {
+export function unequipItemPapyrus(item: Form) {
     let handle = (sp as any).ModEvent.Create("ELDEN_EQUIP_unequipItem");
     if (!handle)
         return;
@@ -44,7 +45,7 @@ export function unequipItemPapyrus(item: sp.Form) {
     (sp as any).ModEvent.Send(handle);
 }
 
-export function unequipItemExPapyrus(item: sp.Form, slot: number) {
+export function unequipItemExPapyrus(item: Form, slot: number) {
     let handle = (sp as any).ModEvent.Create("ELDEN_EQUIP_unequipItemEx");
     if (!handle)
         return;
@@ -53,8 +54,8 @@ export function unequipItemExPapyrus(item: sp.Form, slot: number) {
     (sp as any).ModEvent.Send(handle);
 }
 
-export function unequipSpellPapyrus(spell: sp.Form, slot: number) {
-    // Type casting is done in the modEvent.
+export function unequipSpellPapyrus(spell: Form, slot: number) {
+    // Type casting is done in the mod event
     let handle = (sp as any).ModEvent.Create("ELDEN_EQUIP_unequipSpell");
     if (!handle)
         return;
@@ -63,8 +64,8 @@ export function unequipSpellPapyrus(spell: sp.Form, slot: number) {
     (sp as any).ModEvent.Send(handle);
 }
 
-export function unequipShoutPapyrus(shout: sp.Form) {
-    // Type casting is done in the modEvent.
+export function unequipShoutPapyrus(shout: Form) {
+    // Type casting is done in the mod event
     let handle = (sp as any).ModEvent.Create("ELDEN_EQUIP_unequipShout");
     if (!handle)
         return;
