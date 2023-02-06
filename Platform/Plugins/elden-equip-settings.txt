@@ -1,2 +1,22 @@
 {
+	"cycleEditorOpened": "Cycle Editor opened",
+	"cycleEditorClosed": "Cycle Editor closed",
+	"added": "Added",
+	"removed": "Removed",
+	"isInThe": "is in the",
+	"toThe": "to the",
+	"doesNotExistInThe": "does not exist in the",
+	"fromThe": "from the",
+	"leftHandCycle": "Left Hand cycle",
+	"rightHandCycle": "Right Hand cycle",
+	"voiceCycle": "Voice cycle",
+	"arrowCycle": "Arrow cycle",
+	"boltCycle": "Bolt cycle",
+	"quickItemCycle": "Quick Item cycle",
+	"potionOfHealthRestoration": "Potion of Health Restoration",
+	"potionOfMagickaRestoration": "Potion of Magicka Restoration",
+	"potionOfStaminaRestoration": "Potion of Stamina Restoration",
+	"resetCycleText": "All cycles from Elden Equip have been reset",
+	"uninstallText": "Removed all Elden Equip information stored in JContainers. Please make a game save, exit the game, and deactivate/remove Elden Equip",
+	"initializationText": "Elden Equip is initialized"
 }

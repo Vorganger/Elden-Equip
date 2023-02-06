@@ -8,7 +8,7 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
-   sodipodi:docname="frame_edit_mode.svg"
+   sodipodi:docname="frame_cycle_editor.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +41,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#333333;fill-opacity:0.80000001;stroke-width:0.7401;stroke-linecap:square;paint-order:markers fill stroke"
+       style="fill:#500000;fill-opacity:0.80000001;stroke-width:0.7401;stroke-linecap:square;paint-order:markers fill stroke"
        id="rect846"
        width="75"
        height="100"
