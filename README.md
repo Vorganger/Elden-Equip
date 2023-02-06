@@ -1,5 +1,5 @@
 # Elden Equip
 
-Source code for Elden Equip, an equipment UI mod for Skyrim.
+A simple hotkey system mod inspired by Elden Ring that is based on Skyrim Platform
 
 [Neuxs Mods](https://www.nexusmods.com/skyrimspecialedition/mods/74220)
