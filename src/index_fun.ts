@@ -223,7 +223,7 @@ export function updateActivateKey() {
 }
 
 export function updateAmmoCount(player: Actor) {
-    if (!playerHoldingBow || !playerHoldingCrossbow) {
+    if (!playerHoldingBow && !playerHoldingCrossbow) {
         return;
     }
     let ammo = (solveForm(consts.AMMO_RECENT) ?? null) as Ammo;
@@ -231,19 +231,6 @@ export function updateAmmoCount(player: Actor) {
         return;
     }
     let currentAmmoCount = player?.getItemCount(ammo) ?? 0;
-    // Bolts
-    if (ammo.isBolt()) {
-        if (boltCycle.count === currentAmmoCount) {
-            return;
-        }
-        boltCycle.count = currentAmmoCount;
-    // Arrows
-    } else {
-        if (arrowCycle.count === currentAmmoCount) {
-            return;
-        }
-        arrowCycle.count = currentAmmoCount;
-    }
     widget.changeTextContent("ammo-count", currentAmmoCount.toString());
     if (settings.widgetDynamicVisibility) {
         startTimer(equipmentVisible);
