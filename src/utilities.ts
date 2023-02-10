@@ -24,16 +24,22 @@ export function isBattleaxe(form: Form | null): boolean {
 export function isBow(form: Form | null): boolean {
     if (!form) {
         return false;
-    } else {
-        return (Weapon.from(form) as Weapon).getWeaponType() === WeaponType.Bow;
     }
+    let weapon = Weapon.from(form);
+    if (weapon) {
+        return weapon.getWeaponType() === WeaponType.Bow;
+    }
+    return false;
 }
 export function isCrossbow(form: Form | null): boolean {
     if (!form) {
         return false;
-    } else {
-        return (Weapon.from(form) as Weapon).getWeaponType() === WeaponType.Crossbow;
     }
+    let weapon = Weapon.from(form);
+    if (weapon) {
+        return weapon.getWeaponType() === WeaponType.Crossbow;
+    }
+    return false;
 }
 export function isDagger(form: Form | null): boolean {
     return hasKeywordString(form, "WeapTypeDagger"); }
