@@ -22,10 +22,18 @@ export function hasKeywordString(form: Form | null, keywordStr: String): boolean
 export function isBattleaxe(form: Form | null): boolean {
     return hasKeywordString(form, "WeapTypeBattleaxe"); }
 export function isBow(form: Form | null): boolean {
-    return (Weapon.from(form) as Weapon).getWeaponType() === WeaponType.Bow;
+    if (!form) {
+        return false;
+    } else {
+        return (Weapon.from(form) as Weapon).getWeaponType() === WeaponType.Bow;
+    }
 }
 export function isCrossbow(form: Form | null): boolean {
-    return (Weapon.from(form) as Weapon).getWeaponType() === WeaponType.Crossbow;
+    if (!form) {
+        return false;
+    } else {
+        return (Weapon.from(form) as Weapon).getWeaponType() === WeaponType.Crossbow;
+    }
 }
 export function isDagger(form: Form | null): boolean {
     return hasKeywordString(form, "WeapTypeDagger"); }

@@ -5,7 +5,8 @@ import * as utils from "./utilities";
 import * as consts from "./constants";
 
 export function isMenuClosed(): boolean {
-    return !Utility.isInMenuMode() && (!Ui.isMenuOpen("Crafting Menu") && !Ui.isMenuOpen("Fader Menu") && !Ui.isMenuOpen("Dialogue Menu") || (Ui.isMenuOpen("LootMenu")));
+    return !Utility.isInMenuMode() && (!Ui.isMenuOpen("Crafting Menu") && !Ui.isMenuOpen("Fader Menu") && !Ui.isMenuOpen("Dialogue Menu")
+            && !Ui.isMenuOpen("PluginExplorerMenu") || (Ui.isMenuOpen("LootMenu")));
 }
 
 export function changeOpacity(element: string, time: number, delay: number, opacity: number) {

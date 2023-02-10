@@ -816,6 +816,7 @@ export function leftKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
         }
         return;
     }
+    // LootMenu is from Quick Loot RE
     if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
@@ -947,6 +948,7 @@ export function rightKeyEvent(device: number, isDown: boolean, isUp: boolean, is
         }
         return;
     }
+    // LootMenu is from Quick Loot RE
     if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
@@ -1020,7 +1022,11 @@ export function rightKeyEvent(device: number, isDown: boolean, isUp: boolean, is
 }
 
 export function upKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
-    if (device !== settings.upKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete || !menuClosed || Ui.isMenuOpen("LootMenu")) {
+    if (device !== settings.upKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete) {
+        return;
+    }
+    // LootMenu is from Quick Loot RE
+    if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
     // ---------------
@@ -1078,7 +1084,11 @@ export function upKeyEvent(device: number, isDown: boolean, isUp: boolean, isHel
 }
 
 export function downKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
-    if (device !== settings.downKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete || !menuClosed || Ui.isMenuOpen("LootMenu")) {
+    if (device !== settings.downKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete) {
+        return;
+    }
+    // LootMenu is from Quick Loot RE
+    if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
     // -----------------
@@ -1293,7 +1303,11 @@ export function closeCycleEditor() {
 }
 
 export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean) {
-    if (device !== settings.itemUseKey.device || settings.quickItemUse !== 0 || !menuClosed || Ui.isMenuOpen("LootMenu")) {
+    if (device !== settings.itemUseKey.device || settings.quickItemUse !== 0) {
+        return;
+    }
+    // LootMenu is from Quick Loot RE
+    if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
     if (isDown) {
@@ -1316,7 +1330,11 @@ export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean) 
 }
 
 export function cycleEditorKeyEvent(device: number, isDown: boolean, isUp: boolean, isHeld: boolean, heldDuration: number) {
-    if (device !== settings.cycleEditorKey.device || !menuClosed || Ui.isMenuOpen("LootMenu")) {
+    if (device !== settings.cycleEditorKey.device) {
+        return;
+    }
+    // LootMenu is from Quick Loot RE
+    if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
     if (isDown) {
