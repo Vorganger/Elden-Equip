@@ -54,9 +54,11 @@ on("menuOpen", () => {
 });
 
 on("containerChanged", (event) => {
-    // Fixes an issue with leveling up triggering the container change
-    // an uncountable number of times
-    if (Ui.isMenuOpen("LevelUp Menu")) {
+    // Intended to workaround a Skyrim Platform issue with the containerChanged event
+    // Intended to fix an issue with leveling up triggering this event
+    // Intended to fix an issue with QUI plugin explorer container being opened
+    // InventoryMenu and Dialogue Menu are excluded since they typically have containerChanged events in them
+    if (!fun.menuClosed && !Ui.isMenuOpen("InventoryMenu") && !Ui.isMenuOpen("Dialogue Menu")) {
         return;
     }
     let player = Game.getPlayer();
@@ -104,7 +106,13 @@ on("equip", (event) => {
 });
 
 
-on("unequip", (event) => {  
+on("unequip", (event) => {
+    // Intended to workaround a Skyrim Platform issue with the unequip event
+    // being called a bunch of times when leveling up
+    // Prevents stuttering when leveling up
+    if (Ui.isMenuOpen("LevelUp Menu")) {
+        return;
+    }
     if (!fun.isLoaded || event.actor.getFormID() !== consts.PLAYER_ID) {
         return;
     }
