@@ -136,8 +136,10 @@ export function initWidgets() {
     widget.changeVisibility("left-hand-name", !settings.hideHandNames);
     widget.changeVisibility("right-hand-name", !settings.hideHandNames);
     widget.changeVisibility("ammo-name", !settings.hideAmmoName);
-    // Dynamic UI visibility
+    // Dynamic visibility
     if (settings.widgetDynamicVisibility && settings.widgetDVOnCombat && !player?.isInCombat()) {
+        setWidgetVisibility(false, 0);
+    } else if (settings.widgetDynamicVisibility && !settings.widgetDVOnCombat) {
         setWidgetVisibility(false, 0);
     } else {
         setWidgetVisibility(true, 0);
@@ -164,7 +166,6 @@ export async function initializeOnLoad() {
     await Utility.wait(1);
     initVariables();
     initCycles();
-    updateActivateKey();
     settings.updateSettings();
     if (settings.initMessage) {
         printConsole(settings.initializationText);
@@ -215,11 +216,6 @@ export function onUpdateInterval() {
 export function startTimer(object: {startTime: number, isEnabled: boolean}) {
     object.startTime = -1;
     object.isEnabled = true;
-}
-
-export function updateActivateKey() {
-    activateKeyKeyboard = utils.convertKeyValue(Input.getMappedKey("Activate", InputDeviceType.Keyboard));
-    activateKeyGamepad = utils.convertKeyValue(Input.getMappedKey("Activate", InputDeviceType.Gamepad));
 }
 
 export function updateAmmoCount(player: Actor) {
@@ -816,7 +812,7 @@ export function leftKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
         }
         return;
     }
-    // LootMenu is from Quick Loot RE
+    // LootMenu is from Quick Loot RE/EE
     if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
@@ -835,7 +831,7 @@ export function leftKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
                 startTimer(cycleEditorRemoveTimer);
                 return;
             }
-            if (playerHolding2H) {
+            if (playerHolding2H && settings.lockLeftHandCycle) {
                 return;
             }
             leftHandCycle.remove();
@@ -860,7 +856,7 @@ export function leftKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
             if (settings.widgetDynamicVisibility) {
                 startTimer(equipmentVisible);
             }
-            if (playerHolding2H) {
+            if (playerHolding2H && settings.lockLeftHandCycle) {
                 startTimer(leftHandNameVisible);
                 return;
             }
@@ -884,7 +880,7 @@ export function leftKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
             if (settings.widgetDynamicVisibility) {
                 startTimer(equipmentVisible);
             }
-            if (playerHolding2H) {
+            if (playerHolding2H && settings.lockLeftHandCycle) {
                 startTimer(leftHandNameVisible);
                 return;
             }
@@ -948,7 +944,7 @@ export function rightKeyEvent(device: number, isDown: boolean, isUp: boolean, is
         }
         return;
     }
-    // LootMenu is from Quick Loot RE
+    // LootMenu is from Quick Loot RE/EE
     if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
@@ -1025,7 +1021,7 @@ export function upKeyEvent(device: number, isDown: boolean, isUp: boolean, isHel
     if (device !== settings.upKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete) {
         return;
     }
-    // LootMenu is from Quick Loot RE
+    // LootMenu is from Quick Loot RE/EE
     if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
@@ -1087,7 +1083,7 @@ export function downKeyEvent(device: number, isDown: boolean, isUp: boolean, isH
     if (device !== settings.downKey.device || cycleEditor.isLoading || cycleEditor.isLoadingComplete) {
         return;
     }
-    // LootMenu is from Quick Loot RE
+    // LootMenu is from Quick Loot RE/EE
     if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
@@ -1306,7 +1302,7 @@ export function itemUseKeyEvent(device: number, isDown: boolean, isUp: boolean) 
     if (device !== settings.itemUseKey.device || settings.quickItemUse !== 0) {
         return;
     }
-    // LootMenu is from Quick Loot RE
+    // LootMenu is from Quick Loot RE/EE
     if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }
@@ -1333,7 +1329,7 @@ export function cycleEditorKeyEvent(device: number, isDown: boolean, isUp: boole
     if (device !== settings.cycleEditorKey.device) {
         return;
     }
-    // LootMenu is from Quick Loot RE
+    // LootMenu is from Quick Loot RE/EE
     if (!menuClosed || Ui.isMenuOpen("LootMenu")) {
         return;
     }

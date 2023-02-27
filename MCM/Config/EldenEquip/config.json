@@ -1,22 +1,22 @@
 {
 	"modName": "EldenEquip",
-	"displayName": "Elden Equip",
+	"displayName": "$EldenEquip",
 	"minMcmVersion": 9,
 	"cursorFillMode": "topToBottom",
 	"pages": [
 		{
-			"pageDisplayName": "Controls",
+			"pageDisplayName": "$EldenEquip_Controls",
 			"cursorFillMode": "topToBottom",
 			"content": [
 				{
-					"text": "Buttons",
+					"text": "$EldenEquip_Buttons",
 					"type": "header"
 				},
 				{
 					"id": "uUpButton:Buttons",
-					"text": "Up Button",
+					"text": "$EldenEquip_UpButton",
 					"type": "keymap",
-					"help": "Button for cycling voice slots or the top item in the pouch.",
+					"help": "$EldenEquip_UpButtonDescription",
 					"ignoreConflicts": true,
 					"valueOptions": {
 						"sourceType": "ModSettingInt"
@@ -24,9 +24,9 @@
 				},
 				{
 					"id": "uDownButton:Buttons",
-					"text": "Down Button",
+					"text": "$EldenEquip_DownButton",
 					"type": "keymap",
-					"help": "Button for cycling quick item slots or the bottom item in the pouch.",
+					"help": "$EldenEquip_DownButtonDescription",
 					"ignoreConflicts": true,
 					"valueOptions": {
 						"sourceType": "ModSettingInt"
@@ -34,9 +34,9 @@
 				},
 				{
 					"id": "uLeftButton:Buttons",
-					"text": "Left Button",
+					"text": "$EldenEquip_LeftButton",
 					"type": "keymap",
-					"help": "Button for cycling left hand item slots or the left item in the pouch.",
+					"help": "$EldenEquip_LeftButtonDescription",
 					"ignoreConflicts": true,
 					"valueOptions": {
 						"sourceType": "ModSettingInt"
@@ -44,9 +44,9 @@
 				},
 				{
 					"id": "uRightButton:Buttons",
-					"text": "Right Button",
+					"text": "$EldenEquip_RightButton",
 					"type": "keymap",
-					"help": "Button for cycling right hand item slots or the right item in the pouch.",
+					"help": "$EldenEquip_RightButtonDescription",
 					"ignoreConflicts": true,
 					"valueOptions": {
 						"sourceType": "ModSettingInt"
@@ -54,9 +54,9 @@
 				},
 				{
 					"id": "uItemUseButton:Buttons",
-					"text": "Item Use Button",
+					"text": "$EldenEquip_QuickItemUseButton",
 					"type": "keymap",
-					"help": "Button for using the queued quick item.",
+					"help": "$EldenEquip_QuickItemUseButtonDescription",
 					"ignoreConflicts": true,
 					"valueOptions": {
 						"sourceType": "ModSettingInt"
@@ -64,80 +64,90 @@
 				},
 				{
 					"id": "uCycleEditorButton:Buttons",
-					"text": "Cycle Editor Button",
+					"text": "$EldenEquip_CycleEditorButtonHeld",
 					"type": "keymap",
-					"help": "Button for accessing the cycle editor.",
+					"help": "$EldenEquip_CycleEditorButtonHeldDescription",
 					"ignoreConflicts": true,
 					"valueOptions": {
 						"sourceType": "ModSettingInt"
 					}
 				},
 				{
-					"text": "Hold Times",
+					"id": "uVisibilityPouchButton:Buttons",
+					"text": "$EldenEquip_VisibilityPouchButton",
+					"type": "keymap",
+					"help": "$EldenEquip_VisibilityPouchButtonDescription",
+					"ignoreConflicts": true,
+					"valueOptions": {
+						"sourceType": "ModSettingInt"
+					}
+				},
+				{
+					"text": "$EldenEquip_HoldTimes",
 					"type": "header",
 					"position": 1
 				},
 				{
 					"id": "fCycleEditor:HoldTimes",
-					"text": "Cycle Editor Hold Time",
+					"text": "$EldenEquip_CycleEditorHoldTime",
 					"type": "slider",
-					"help": "Hold time for the cycle editor.",
+					"help": "$EldenEquip_CycleEditorHoldTimeDescription",
 					"valueOptions": {
 						"min": 0.1,
 						"max": 1,
 						"step": 0.1,
-						"formatString": "{1}",
-						"sourceType": "ModSettingFloat"
-					}
-				},
-				{
-					"id": "fPouchAccess:HoldTimes",
-					"text": "Pouch Access Hold Time",
-					"type": "slider",
-					"help": "Hold time for accessing pouch items with the activate button.",
-					"valueOptions": {
-						"min": 0.1,
-						"max": 1,
-						"step": 0.1,
-						"formatString": "{1}",
-						"sourceType": "ModSettingFloat"
-					}
-				},
-				{
-					"id": "fCycleButton:HoldTimes",
-					"text": "Cycle Button Hold Time",
-					"type": "slider",
-					"help": "Hold time for cycling buttons (up, down, left, right).",
-					"valueOptions": {
-						"min": 0.1,
-						"max": 1,
-						"step": 0.1,
-						"formatString": "{1}",
+						"formatString": "{1} s",
 						"sourceType": "ModSettingFloat"
 					}
 				},
 				{
 					"id": "fDualCast:HoldTimes",
-					"text": "Dual Cast Hold Time",
+					"text": "$EldenEquip_DualCastHoldTime",
 					"type": "slider",
-					"help": "Hold time to dual cast.",
+					"help": "$EldenEquip_DualCastHoldTimeDescription",
 					"valueOptions": {
 						"min": 0.1,
 						"max": 1,
 						"step": 0.1,
-						"formatString": "{1}",
+						"formatString": "{1} s",
 						"sourceType": "ModSettingFloat"
 					}
 				},
 				{
-					"text": "Control Options",
+					"id": "fCycleButton:HoldTimes",
+					"text": "$EldenEquip_CycleButtonHoldTime",
+					"type": "slider",
+					"help": "$EldenEquip_CycleButtonHoldTimeDescription",
+					"valueOptions": {
+						"min": 0.1,
+						"max": 1,
+						"step": 0.1,
+						"formatString": "{1} s",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"id": "fPouchAccess:HoldTimes",
+					"text": "$EldenEquip_PouchAccessHoldTime",
+					"type": "slider",
+					"help": "$EldenEquip_PouchAccessHoldTimeDescription",
+					"valueOptions": {
+						"min": 0.1,
+						"max": 1,
+						"step": 0.1,
+						"formatString": "{1} s",
+						"sourceType": "ModSettingFloat"
+					}
+				},
+				{
+					"text": "$EldenEquip_DisableControls",
 					"type": "header"
 				},
 				{
 					"id": "bDisableControls:ControlOptions",
-					"text": "Disable Controls",
+					"text": "$EldenEquip_DisableControls",
 					"type": "toggle",
-					"help": "Disables all controls from Elden Equip.",
+					"help": "$EldenEquip_DisableControlsDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
@@ -145,174 +155,171 @@
 			]
 		},
 		{
-			"pageDisplayName": "Equipping",
+			"pageDisplayName": "$EldenEquip_Equipping",
 			"cursorFillMode": "topToBottom",
 			"content": [
 				{
-					"text": "Unequip Slots",
+					"text": "$EldenEquip_CycleUnequipSlots",
 					"type": "header"
 				},
 				{
 					"id": "bLeftHandCycleUnequip:UnequipSlots",
-					"text": "Left Hand Cycle",
+					"text": "$EldenEquip_LeftHandCycleUnequip",
 					"type": "toggle",
-					"help": "Unequips the left hand item when cycled to the end of the left hand cycle.",
+					"help": "$EldenEquip_LefthandCycleUnequipDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bRightHandCycleUnequip:UnequipSlots",
-					"text": "Right Hand Cycle",
+					"text": "$EldenEquip_RightHandCycleUnequip",
 					"type": "toggle",
-					"help": "Unequips the right hand item when cycled to the end of the right hand cycle.",
+					"help": "$EldenEquip_RightHandCycleUnequipDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bVoiceCycleUnequip:UnequipSlots",
-					"text": "Voice Cycle",
+					"text": "$EldenEquip_VoiceCycleUnequip",
 					"type": "toggle",
-					"help": "Unequips the voice item when cycled to the end of the voice cycle.",
+					"help": "$EldenEquip_VoiceCycleUnequipDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bAmmoCycleUnequip:UnequipSlots",
-					"text": "Ammo Cycle",
+					"text": "$EldenEquip_AmmoCycleUnequip",
 					"type": "toggle",
-					"help": "Unequips the ammo item when cycled to the end of the ammo cycle.",
+					"help": "$EldenEquip_AmmoCycleUnequipDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"text": "Cycle Button Hold Reset",
+					"text": "$EldenEquip_CycleHoldReset",
 					"type": "header"
 				},
 				{
 					"id": "bLeftHandCycleHoldReset:HoldReset",
-					"text": "Left Hand Cycle",
+					"text": "$EldenEquip_LeftHandCycleHoldReset",
 					"type": "toggle",
-					"help": "Allows holding the left hand cycle button to reset its index.",
+					"help": "$EldenEquip_LeftHandCycleHoldResetDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bRightHandCycleHoldReset:HoldReset",
-					"text": "Right Hand Cycle",
+					"text": "$EldenEquip_RightHandCycleHoldReset",
 					"type": "toggle",
-					"help": "Allows holding the right hand cycle button to reset its index.",
+					"help": "$EldenEquip_RightHandCycleHoldResetDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bVoiceCycleHoldReset:HoldReset",
-					"text": "Voice Cycle",
+					"text": "$EldenEquip_VoiceCycleHoldReset",
 					"type": "toggle",
-					"help": "Allows holding the voice cycle button to reset its index.",
+					"help": "$EldenEquip_VoiceCycleHoldResetDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bAmmoCycleHoldReset:HoldReset",
-					"text": "Ammo Cycle",
+					"text": "$EldenEquip_AmmoCycleHoldReset",
 					"type": "toggle",
-					"help": "Allows holding the ammo cycle button to reset its index.",
+					"help": "$EldenEquip_AmmoCycleHoldResetDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"text": "Cycle Editor",
+					"text": "$EldenEquip_DualCast",
 					"type": "header"
 				},
 				{
-					"id": "bCycleEditorAddPotion:CycleEditor",
-					"text": "Add Potion",
-					"type": "toggle",
-					"help": "Adds any \"equipped\" potion added to the quick item cycle back to the player's inventory. Potions are not added to the inventory if the player is in combat, though.",
-					"valueOptions": {
-						"sourceType": "ModSettingBool"
-					}
-				},
-				{
-					"text": "Cycle Button Hold Options",
-					"type": "header",
-					"position": 1
-				},
-				{
 					"id": "bLeftHandHoldDualCast:HoldOptions",
-					"text": "Left Hand Dual Cast",
+					"text": "$EldenEquip_LeftHandDualCast",
 					"type": "toggle",
-					"help": "Allows dual casting an equipped (independent of the cycle) left hand spell by holding the left hand cycle button.",
+					"help": "$EldenEquip_LeftHandDualCastDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bRightHandHoldDualCast:HoldOptions",
-					"text": "Right Hand Dual Cast",
+					"text": "$EldenEquip_RightHandDualCast",
 					"type": "toggle",
-					"help": "Allows dual casting an equipped (independent of the cycle) right hand spell by holding the right hand cycle button.",
+					"help": "$EldenEquip_RightHandDualCastDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"id": "bUseQuickItemAlt:HoldOptions",
-					"text": "Alternate Quick Item Use",
+					"text": "$EldenEquip_QuickItems",
+					"type": "header",
+					"position": 1
+				},
+				{
+					"id": "uQuickItemUse:QuickItems",
+					"text": "$EldenEquip_QuickItemUse",
+					"type": "enum",
+					"help": "$EldenEquip_QuickItemUseDescription",
+					"valueOptions": {
+						"options": [
+							"$EldenEquip_QuickItemUseNormal",
+							"$EldenEquip_QuickItemUseAlternate",
+							"$EldenEquip_QuickItemUseAlternateInverted"
+						],
+						"shortNames": [
+							"$EldenEquip_QuickItemUseNormal",
+							"$EldenEquip_QuickItemUseAlternate",
+							"$EldenEquip_QuickItemUseInverted"
+						],
+						"sourceType": "ModSettingInt"
+					}
+				},
+				{
+					"id": "bUseOptimalHealthPotion:QuickItems",
+					"text": "$EldenEquip_HealthPotions",
 					"type": "toggle",
-					"help": "Use the queued quick item by holding the quick item cycle button. Also disables the hold cycle reset functionality in the quick item cycle.",
+					"help": "$EldenEquip_HealthPotionsDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"text": "Optimal Restoration Potions",
-					"type": "header"
-				},
-				{
-					"id": "bUseOptimalHealthPotion:OptimalPotions",
-					"text": "Health Potions",
+					"id": "bUseOptimalMagickaPotion:QuickItems",
+					"text": "$EldenEquip_MagickaPotions",
 					"type": "toggle",
-					"help": "Allows usage of optimal health restoration potions in the quick item cycle. Enabling this automatically replaces all health restoration potions.",
+					"help": "$EldenEquip_MagickaPotionsDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"id": "bUseOptimalMagickaPotion:OptimalPotions",
-					"text": "Magicka Potions",
+					"id": "bUseOptimalStaminaPotion:QuickItems",
+					"text": "$EldenEquip_StaminaPotions",
 					"type": "toggle",
-					"help": "Allows usage of optimal magicka restoration potions in the quick item cycle. Enabling this automatically replaces all magicka restoration potions.",
+					"help": "$EldenEquip_StaminaPotionsDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"id": "bUseOptimalStaminaPotion:OptimalPotions",
-					"text": "Stamina Potions",
-					"type": "toggle",
-					"help": "Allows usage of optimal stamina restoration potions in the quick item cycle. Enabling this automatically replaces all stamina restoration potions.",
-					"valueOptions": {
-						"sourceType": "ModSettingBool"
-					}
-				},
-				{
-					"text": "Pouch Items",
+					"text": "$EldenEquip_PouchItems",
 					"type": "header"
 				},
 				{
 					"id": "uOffset:Pouch",
-					"text": "Favorited Items Hotkeys Offset",
+					"text": "$EldenEquip_FavoritedItemsHotkeysOffset",
 					"type": "slider",
-					"help": "Offsets the favorited item hotkey positions. By default, pouch items are based on favorited item hotkeys 1-4 with offset set to 0. With offset set to 1, pouch items are based on favorited item hotkeys 2-5. Same idea goes for other offset values.",
+					"help": "$EldenEquip_FavoritedItemsHotkeysOffsetDescription",
 					"ignoreConflicts": true,
 					"valueOptions": {
 						"min": 0,
@@ -320,78 +327,117 @@
 						"step": 1,
 						"sourceType": "ModSettingInt"
 					}
+				},
+				{
+					"text": "$EldenEquip_CycleEditor",
+					"type": "header"
+				},
+				{
+					"id": "bCycleEditorAddPotion:CycleEditor",
+					"text": "$EldenEquip_AddPotion",
+					"type": "toggle",
+					"help": "$EldenEquip_AddPotionDescription",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "$EldenEquip_UnequipAmmo",
+					"type": "header"
+				},
+				{
+					"id": "bUnequipAmmo:UnequipAmmo",
+					"text": "$EldenEquip_UnequipAmmo",
+					"type": "toggle",
+					"help": "$EldenEquip_UnequipAmmoDescription",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
+				},
+				{
+					"text": "$EldenEquip_LockLeftHandCycle",
+					"type": "header"
+				},
+				{
+					"id": "bLockLeftHandCycle:LockLeftHandCycle",
+					"text": "$EldenEquip_LockLeftHandCycle",
+					"type": "toggle",
+					"help": "$EldenEquip_LockLeftHandCycleDescription",
+					"valueOptions": {
+						"sourceType": "ModSettingBool"
+					}
 				}
 			]
 		},
 		{
-			"pageDisplayName": "Interface",
+			"pageDisplayName": "$EldenEquip_Interface",
 			"cursorFillMode": "topToBottom",
 			"content": [
 				{
-					"text": "Positioning",
+					"text": "$EldenEquip_Positioning",
 					"type": "header"
 				},
 				{
 					"id": "fEquipmentWidgetX:Position",
-					"text": "Equipment Widget X-Axis",
+					"text": "$EldenEquip_EquipmentWidgetXAxis",
 					"type": "slider",
-					"help": "Equipment widget position on the x-axis.",
+					"help": "$EldenEquip_EquipmentWidgetXAxisDescription",
 					"valueOptions": {
 						"min": -20,
 						"max": 120,
-						"step": 0.5,
-						"formatString": "{1}",
+						"step": 0.2,
+						"formatString": "{1} %",
 						"sourceType": "ModSettingFloat"
 					}
 				},
 				{
 					"id": "fEquipmentWidgetY:Position",
-					"text": "Equipment Widget Y-Axis",
+					"text": "$EldenEquip_EquipmentWidgetYAxis",
 					"type": "slider",
-					"help": "Equipment widget position on the y-axis.",
+					"help": "$EldenEquip_EquipmentWidgetYAxisDescription",
 					"valueOptions": {
 						"min": -20,
 						"max": 120,
-						"step": 0.1,
-						"formatString": "{1}",
+						"step": 0.2,
+						"formatString": "{1} %",
 						"sourceType": "ModSettingFloat"
 					}
 				},
 				{
 					"id": "fGoldWidgetX:Position",
-					"text": "Gold Widget X-Axis",
+					"text": "$EldenEquip_GoldWidgetXAxis",
 					"type": "slider",
-					"help": "Gold widget position on the x-axis.",
+					"help": "$EldenEquip_GoldWidgetXAxisDescription",
 					"valueOptions": {
 						"min": -20,
 						"max": 120,
-						"step": 0.1,
-						"formatString": "{1}",
+						"step": 0.2,
+						"formatString": "{1} %",
 						"sourceType": "ModSettingFloat"
 					}
 				},
 				{
 					"id": "fGoldWidgetY:Position",
-					"text": "Gold Widget Y-Axis",
+					"text": "$EldenEquip_GoldWidgetYAxis",
 					"type": "slider",
-					"help": "Gold widget position on the y-axis.",
+					"help": "$EldenEquip_GoldWidgetYAxisDescription",
 					"valueOptions": {
 						"min": -20,
 						"max": 120,
-						"step": 0.1,
-						"formatString": "{1}",
+						"step": 0.2,
+						"formatString": "{1} %",
 						"sourceType": "ModSettingFloat"
 					}
 				},
 				{
-					"text": "Scaling",
+					"text": "$EldenEquip_Scaling",
 					"type": "header"
 				},
 				{
 					"id": "fEquipmentWidgetScale:Scaling",
-					"text": "Equipment Widget Scale",
+					"text": "$EldenEquip_EquipmentWidgetScale",
 					"type": "slider",
-					"help": "Equipment widget scale multiplier.",
+					"help": "$EldenEquip_EquipmentWidgetScaleDescription",
 					"valueOptions": {
 						"min": 0.1,
 						"max": 4,
@@ -402,9 +448,9 @@
 				},
 				{
 					"id": "fGoldWidgetScale:Scaling",
-					"text": "Gold Widget Scale",
+					"text": "$EldenEquip_GoldWidgetScale",
 					"type": "slider",
-					"help": "Gold widget scale multiplier.",
+					"help": "$EldenEquip_GoldWidgetScaleDescription",
 					"valueOptions": {
 						"min": 0.1,
 						"max": 4,
@@ -414,95 +460,95 @@
 					}
 				},
 				{
-					"text": "Performance",
+					"text": "$EldenEquip_Performance",
 					"type": "header"
 				},
 				{
 					"id": "bDisableOpacityTransitions:Performance",
-					"text": "Disable Opacity Transitions",
+					"text": "$EldenEquip_DisableOpacityTransitions",
 					"type": "toggle",
-					"help": "Disables opacity transitions to improve performance.",
+					"help": "$EldenEquip_DisableOpacityTransitionsDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bDisableFlashFeedback:Performance",
-					"text": "Disable Flash Feedback",
+					"text": "$EldenEquip_DisableFlashFeedback",
 					"type": "toggle",
-					"help": "Disables flash feedback animations to improve performance.",
+					"help": "$EldenEquip_DisableFlashFeedbackTransitions",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"text": "Visibility",
+					"text": "$EldenEquip_Visibility",
 					"type": "header",
 					"position": 1
 				},
 				{
 					"id": "bHideWidgets:Visibility",
-					"text": "Hide Widgets",
+					"text": "$EldenEquip_HideWidgets",
 					"type": "toggle",
-					"help": "Hides all widgets.",
+					"help": "$EldenEquip_HideWidgetsDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bHideHandNames:Visibility",
-					"text": "Hide Hand Names",
+					"text": "$EldenEquip_HideHandNames",
 					"type": "toggle",
-					"help": "Hides hand names found on the equipment widget.",
+					"help": "$EldenEquip_HideHandNamesDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bHideAmmoName:Visibility",
-					"text": "Hide Ammo Name",
+					"text": "$EldenEquip_HideAmmoName",
 					"type": "toggle",
-					"help": "Hides ammo name found on the equipment widget.",
+					"help": "$EldenEquip_HideAmmoNameDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bHideGoldWidget:Visibility",
-					"text": "Hide Gold Widget",
+					"text": "$EldenEquip_HideGoldWidget",
 					"type": "toggle",
-					"help": "Hides gold widget.",
+					"help": "$EldenEquip_HideGoldWidgetDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"text": "Dynamic Visibility",
+					"text": "$EldenEquip_DynamicVisibility",
 					"type": "header"
 				},
 				{
 					"id": "bEnabled:DynamicVisibility",
-					"text": "Enable",
+					"text": "$EldenEquip_DynamicVisibilityEnable",
 					"type": "toggle",
-					"help": "Enables dynamic visibility, similar to how Elden Ring has an \"Auto\" HUD setting.",
+					"help": "$EldenEquip_DynamicVisibilityEnableDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bShowOnCombat:DynamicVisibility",
-					"text": "Show On Combat",
+					"text": "$EldenEquip_DynamicVisibilityShowOnCombat",
 					"type": "toggle",
-					"help": "Shows/hides equipment and gold widget on combat start/end.",
+					"help": "$EldenEquip_DynamicVisibilityShowOnCombatDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"id": "bShowOnActivate:DynamicVisibility",
-					"text": "Show On Activate",
+					"id": "bShowOnButtonPress:DynamicVisibility",
+					"text": "$EldenEquip_DynamicVisibilityShowOnButtonPress",
 					"type": "toggle",
-					"help": "Shows equipment and gold widget on activate button press.",
+					"help": "$EldenEquip_DynamicVisibilityShowOnButtonPressDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
@@ -510,58 +556,58 @@
 			]
 		},
 		{
-			"pageDisplayName": "Misc",
+			"pageDisplayName": "$EldenEquip_Misc",
 			"cursorFillMode": "topToBottom",
 			"content": [
 				{
-					"text": "Messages",
+					"text": "$EldenEquip_Messages",
 					"type": "header"
 				},
 				{
 					"id": "bInitialization:Messages",
-					"text": "Initialization Console Message",
+					"text": "$EldenEquip_InitializationConsoleMessage",
 					"type": "toggle",
-					"help": "Shows the console message when Elden Equip has completed initialization.",
+					"help": "$EldenEquip_InitializationConsoleMessageDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bCycleEditor:Messages",
-					"text": "Cycle Editor Messages",
+					"text": "$EldenEquip_CycleEditorMessages",
 					"type": "toggle",
-					"help": "Shows messages when actions are done in the cycle editor.",
+					"help": "$EldenEquip_CycleEditorMessagesDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
-					"text": "Debug",
+					"text": "$EldenEquip_Debug",
 					"type": "header"
 				},
 				{
 					"id": "bPrintCycles:Debug",
-					"text": "Print Cycles",
+					"text": "$EldenEquip_PrintCycles",
 					"type": "toggle",
-					"help": "Prints all current cycles to the console.",
+					"help": "$EldenEquip_PrintCyclesDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bResetCycles:Debug",
-					"text": "Reset Cycles",
+					"text": "$EldenEquip_ResetCycles",
 					"type": "toggle",
-					"help": "Resets all current cycles.",
+					"help": "$EldenEquip_ResetCyclesDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}
 				},
 				{
 					"id": "bUninstallMod:Debug",
-					"text": "Uninstall Mod",
+					"text": "$EldenEquip_UninstallMod",
 					"type": "toggle",
-					"help": "Removes all information stored in JContainers. Makes it safe to uninstall Elden Equip.",
+					"help": "$EldenEquip_UninstallModDescription",
 					"valueOptions": {
 						"sourceType": "ModSettingBool"
 					}

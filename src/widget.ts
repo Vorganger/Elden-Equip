@@ -281,7 +281,7 @@ function updateIconPotion(item: Form, iconElement: string) {
         changeSource(iconElement, consts.POTION_ALCOHOL_ICON);
     }
     // Poisons
-    else if (potionTypeID === potion?.isPoison()) {
+    else if (potion?.isPoison()) {
         changeSource(iconElement, consts.POTION_POISON_ICON);
     }
     // Generic potion

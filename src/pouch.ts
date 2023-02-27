@@ -17,14 +17,16 @@ export class Pouch {
         let item = Game.getFormEx(this.itemID);
         if (!item)
             return;
+        let itemType = item.getType();
         // Voice spells/shouts
         let currentVoice = player.getEquippedObject(2);
         if (currentVoice?.getFormID() === this.itemID) {
             unequip(currentVoice, 2);
             return;
         }
-        // Spells OR items of quantity > 1
-        if (item.getType() === FormType.Spell || player.getItemCount(item) > 1) {
+        // Spells OR items of quantity > 1 (not inlcuding torches and armor items)
+        if (itemType === FormType.Spell ||
+        (player.getItemCount(item) > 1 && (itemType !== FormType.Light && itemType !== FormType.Armor))) {
             let currentLH = player.getEquippedObject(0);
             let currentRH = player.getEquippedObject(1);
             // If spell is not equipped on left hand

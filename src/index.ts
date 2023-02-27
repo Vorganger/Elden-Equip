@@ -43,7 +43,6 @@ on("menuClose", (event) => {
     // And so, closing the Journal Menu will update the settings
     if (event.name === "Journal Menu") {
         settings.updateSettings();
-        fun.updateActivateKey();
     }
     fun.startTimer(fun.exitMenuTimer); // Starts exitMenuTimer
 });
@@ -57,8 +56,9 @@ on("containerChanged", (event) => {
     // Intended to workaround a Skyrim Platform issue with the containerChanged event
     // Intended to fix an issue with leveling up triggering this event
     // Intended to fix an issue with QUI plugin explorer container being opened
-    // InventoryMenu and Dialogue Menu are excluded since they typically have containerChanged events in them
-    if (!fun.menuClosed && !Ui.isMenuOpen("InventoryMenu") && !Ui.isMenuOpen("Dialogue Menu")) {
+    // These menus are are excluded since they typically have containerChanged events in them
+    if (!fun.menuClosed && !Ui.isMenuOpen("InventoryMenu") && !Ui.isMenuOpen("Dialogue Menu") &&
+    !Ui.isMenuOpen("Console") && !Ui.isMenuOpen("MessageBoxMenu")) {
         return;
     }
     let player = Game.getPlayer();

@@ -45,6 +45,8 @@ export let useOptimalStaminaPotion: boolean;
 export let pouchOffset: number;
 // Equipping - Unequip Ammo
 export let unequipAmmo: boolean;
+// Equipping - Lock Left Hand Cycle
+export let lockLeftHandCycle: boolean;
 // Widget - Position
 export let widgetEquipmentX: number;
 export let widgetEquipmentY: number;
@@ -165,6 +167,8 @@ export function updateSettings() {
     pouchOffset = ((sp as any).MCM.GetModSettingInt("EldenEquip", "uOffset:Pouch"));
     // Equipping - Unequip Ammo
     unequipAmmo = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUnequipAmmo:UnequipAmmo"));
+    // Equipping - Lock Left Hand Cycle
+    lockLeftHandCycle = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bLockLeftHandCycle:LockLeftHandCycle"));
     // Widget - Position
     widgetEquipmentX = ((sp as any).MCM.GetModSettingFloat("EldenEquip", "fEquipmentWidgetX:Position"));
     widgetEquipmentY = ((sp as any).MCM.GetModSettingFloat("EldenEquip", "fEquipmentWidgetY:Position"));
