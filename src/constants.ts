@@ -15,6 +15,9 @@ export const RESTORE_STAMINA_ID = 0x3eb16;
 export const RESTORE_MAGICKA_ID = 0x3eb17;
 export const RESTORE_HEALTH_FOOD_ID = 0xf33cb;
 export const RESTORE_STAMINA_FOOD_ID = 0xf33cc;
+export const ULTIMATE_HEALING_ID = 0xffa03;
+export const ULTIMATE_MAGICKA_ID = 0xffa04;
+export const ULTIMATE_STAMINA_ID = 0xffa05;
 // Mod
 export const MOD_KEY = "elden-equip";
 export const UI_PATH = "file:///Data/Platform/UI/elden-equip-ui.html";
@@ -114,5 +117,5 @@ export const LEFTHAND_RECENT = `.${MOD_KEY}.lefthand-recent`;
 export const RIGHTHAND_RECENT = `.${MOD_KEY}.righthand-recent`;
 export const RIGHTHAND_ONEHANDED = `.${MOD_KEY}.righthand-onehanded`;
 export const VOICE_RECENT = `.${MOD_KEY}.voice-recent`;
-export const AMMO_RECENT = `.${MOD_KEY}.ammo-recent`; // arrow or bolt
+export const AMMO_RECENT = `.${MOD_KEY}.ammo-recent`;
 export const QUICKITEM_INDEX = `.${MOD_KEY}.quickitem-index`;

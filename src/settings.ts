@@ -1,5 +1,5 @@
 import * as sp from "@skyrim-platform/skyrim-platform";
-import { settings } from "@skyrim-platform/skyrim-platform";
+import { Debug, settings } from "@skyrim-platform/skyrim-platform";
 import { setObj, solveObjSetter } from "@skyrim-platform/jcontainers/JDB";
 import { LEFTHAND_ARRAY, RIGHTHAND_ARRAY, VOICE_ARRAY, ARROW_ARRAY, BOLT_ARRAY, QUICKITEM_ARRAY, MOD_KEY } from "./constants";
 import { initWidgets, initVariables, printCyclesConsole, resetCyclesFunc } from "./index_fun"
@@ -210,7 +210,7 @@ export function updateSettings() {
         solveObjSetter(QUICKITEM_ARRAY, 0, false);
         // Resets all cycle objects' arrays found in index_fun
         resetCyclesFunc();
-        sp.Debug.messageBox(resetCycleText);
+        Debug.messageBox(resetCycleText);
         ((sp as any).MCM.SetModSettingBool("EldenEquip", "bResetCycles:Debug", false));
     }
     uninstallMod = ((sp as any).MCM.GetModSettingBool("EldenEquip", "bUninstallMod:Debug"));
@@ -219,7 +219,7 @@ export function updateSettings() {
         setObj(MOD_KEY, 0);
         // Resets all cycle objects' arrays found in index_fun
         resetCyclesFunc();
-        sp.Debug.messageBox(uninstallText);
+        Debug.messageBox(uninstallText);
         ((sp as any).MCM.SetModSettingBool("EldenEquip", "bUninstallMod:Debug", false));
     }
     // Applies all settings that were normally run during hot-reloads/plugin loading

@@ -7,10 +7,6 @@ import * as utils from "./utilities";
 import * as consts from "./constants";
 import * as settings from "./settings";
 
-// --------------
-// Initialization
-// --------------
-
 export let isLoaded = false;
 // Player statuses
 export let playerDead = false;
@@ -22,8 +18,8 @@ export let playerGold = 0;
 // Menus
 export let menuClosed = false;
 // Keys
-export let activateKeyKeyboard: utils.key = { code: -1, device: -1 };
-export let activateKeyGamepad: utils.key = { code: -1, device: -1 };
+export let activateKeyKeyboard: utils.key = { code: -1, device: 0 };
+export let activateKeyGamepad: utils.key = { code: -1, device: 0 };
 // Cycles
 export let leftHandCycle = new EquipmentCycle(0);
 export let rightHandCycle = new EquipmentCycle(1);
@@ -663,8 +659,9 @@ export function equipQuickItemEvent(equipped: Form) {
     // Updates cycle
     let equippedType = equipped.getType();
     // Prevents shields from being added
-    if (equippedType === FormType.Armor && Armor.from(equipped)?.getSlotMask() === SlotMask.Shield)
+    if (equippedType === FormType.Armor && Armor.from(equipped)?.getSlotMask() === SlotMask.Shield) {
         return;
+    }
     quickItemCycle.add(equipped.getFormID());
     if (settings.cycleEditorAddPotion) {
         let player = Game.getPlayer();
@@ -991,11 +988,11 @@ export function rightKeyEvent(device: number, isDown: boolean, isUp: boolean, is
             return;
         }
     }
-    // ------------------
-    // Right button hold.
-    // ------------------
+    // -----------------
+    // Right button hold
+    // -----------------
     if (isHeld) {
-        if (rightKeyHold.isActionCompleted) { // Holding in-progress
+        if (rightKeyHold.isActionCompleted) {
             return;
         }
         // Dual cast hold time.

@@ -1,26 +1,29 @@
-import { Ammo, Form, FormType, Game, InputDeviceType, MagicEffect, Spell, Weapon, WeaponType } from "@skyrim-platform/skyrim-platform";
+import { Ammo, Form, FormType, Game, InputDeviceType, MagicEffect, Shout, Spell, Weapon, WeaponType } from "@skyrim-platform/skyrim-platform";
 import { addForm, count, getForm, object } from "@skyrim-platform/jcontainers/JArray";
 import { solveObj, solveObjSetter } from "@skyrim-platform/jcontainers/JDB";
-import * as modevents from "./modEvents";
 
 // --------------
 // Form utilities
 // --------------
 
 export function hasKeywordString(form: Form | null, keywordStr: String): boolean {
-    if (!form)
+    if (!form) {
         return false;
+    }
     for (let n = 0; n < form.getNumKeywords(); n++) {
         let keyword = form.getNthKeyword(n);
-        if (!keyword)
+        if (!keyword) {
             continue;
-        if (keyword.getString() === keywordStr)
+        }
+        if (keyword.getString() === keywordStr) {
             return true;
+        }
     }
     return false; 
 }
 export function isBattleaxe(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeBattleaxe"); }
+    return hasKeywordString(form, "WeapTypeBattleaxe");
+}
 export function isBow(form: Form | null): boolean {
     if (!form) {
         return false;
@@ -42,28 +45,38 @@ export function isCrossbow(form: Form | null): boolean {
     return false;
 }
 export function isDagger(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeDagger"); }
+    return hasKeywordString(form, "WeapTypeDagger");
+}
 export function isGreatsword(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeGreatsword"); }
+    return hasKeywordString(form, "WeapTypeGreatsword");
+}
 export function isMace(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeMace"); }
+    return hasKeywordString(form, "WeapTypeMace");
+}
 export function isStaff(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeStaff"); }
+    return hasKeywordString(form, "WeapTypeStaff");
+}
 export function isSword(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeSword"); }
+    return hasKeywordString(form, "WeapTypeSword");
+}
 export function isWarhammer(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeWarhammer"); }
+    return hasKeywordString(form, "WeapTypeWarhammer");
+}
 export function isWarAxe(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeWarAxe"); }
+    return hasKeywordString(form, "WeapTypeWarAxe");
+}
 export function isShield(form: Form | null): boolean {
-    return hasKeywordString(form, "ArmorShield"); }
+    return hasKeywordString(form, "ArmorShield");
+}
 export function isItem2H(form: Form | null | undefined): boolean {
-    if (!form)
+    if (!form) {
         return false;
+    }
     for (let n = 0; n < form.getNumKeywords(); n++) {
         let keyword = form.getNthKeyword(n);
-        if (!keyword)
+        if (!keyword) {
             continue;
+        }
         if (keyword.getString() === "WeapTypeBattleaxe" || keyword.getString() === "WeapTypeBow" ||
             keyword.getString() === "WeapTypeGreatsword" || keyword.getString() === "WeapTypeWarhammer") {
                 return true;
@@ -73,121 +86,153 @@ export function isItem2H(form: Form | null | undefined): boolean {
 }
 // SkyUI Weapons Pack icons
 export function isClaw(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeClaw"); }
+    return hasKeywordString(form, "WeapTypeClaw");
+}
 export function isGun(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeGun"); }
+    return hasKeywordString(form, "WeapTypeGun");
+}
 export function isHalberd(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeHalberd"); }
+    return hasKeywordString(form, "WeapTypeHalberd");
+}
 export function isJavelin(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeJavelin"); }
+    return hasKeywordString(form, "WeapTypeJavelin");
+}
 export function isKatana(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeKatana"); }
+    return hasKeywordString(form, "WeapTypeKatana");
+}
 export function isPike(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypePike"); }
+    return hasKeywordString(form, "WeapTypePike");
+}
 export function isQuarterstaff(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeQuarterstaff"); }
+    return hasKeywordString(form, "WeapTypeQuarterstaff");
+}
 export function isRapier(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeRapier"); }
+    return hasKeywordString(form, "WeapTypeRapier");
+}
 export function isScythe(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeScythe"); }
+    return hasKeywordString(form, "WeapTypeScythe");
+}
 export function isSpear(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeSpear"); }
+    return hasKeywordString(form, "WeapTypeSpear");
+}
 export function isWhip(form: Form | null): boolean {
-    return hasKeywordString(form, "WeapTypeWhip"); }
+    return hasKeywordString(form, "WeapTypeWhip");
+}
 
 export function isAmmoCompatible(weapon: Weapon | null, ammo: Ammo | null): boolean {
-    if (!weapon || !ammo)
+    if (!weapon || !ammo) {
         return false;
+    }
     let weaponType = weapon.getWeaponType();
     let ammoIsBolt = ammo.isBolt();
-    if (weaponType === WeaponType.Bow && !ammoIsBolt)
+    if (weaponType === WeaponType.Bow && !ammoIsBolt) {
         return true;
-    if (weaponType === WeaponType.Crossbow && ammoIsBolt)
+    }
+    if (weaponType === WeaponType.Crossbow && ammoIsBolt) {
         return true;
+    }
     return false;
 }
 
 export async function getSpellSchool(spell: Spell | null): Promise<string> {
-    if (!spell)
+    if (!spell) {
         return "";
+    }
     let effect = MagicEffect.from(spell.getNthEffectMagicEffect(0));
-    if (!effect)
+    if (!effect) {
         return "";
+    }
     let school = await effect.getAssociatedSkill();
     return school;
 }
 
 export function hasItem(item: Form | null): boolean {
-    if (!item)
+    if (!item) {
         return false;
+    }
     let itemType = item.getType();
     if (itemType === FormType.Spell || itemType === FormType.Shout) {
-        if (!Game.getPlayer()?.hasSpell(item))
+        if (!Game.getPlayer()?.hasSpell(item)) {
             return false;
+        }
         return true;
     }
-    if ((Game.getPlayer()?.getItemCount(item) ?? 0) === 0)
+    if ((Game.getPlayer()?.getItemCount(item) ?? 0) === 0) {
         return false;
+    }
     return true;
 }
 
 export function equip(item: Form | null, slot?: number): boolean {
-    if (!item)
+    if (!item) {
         return false;
+    }
     let itemType = item.getType();
-
-    if (!hasItem(item))
+    if (!hasItem(item)) {
         return false;
-
+    }
+    let player = Game.getPlayer();
+    if (!player) {
+        return false;
+    }
     // Prevents the pre-2H item from being re-equipped
     let currentRH = Game.getPlayer()?.getEquippedObject(1) ?? null;
     if (isItem2H(item) && !isItem2H(currentRH)) {
         unequip(currentRH, 1);
     }
     if (itemType === FormType.Spell) {
-        modevents.equipSpellPapyrus(item, slot ?? 1);
+        let spell = Spell.from(item);
+        player.equipSpell(spell, slot ?? 1);
     } else if (itemType === FormType.ScrollItem) {
-        modevents.equipItemPapyrus(item);
+        player.equipItem(item, false, true);
     } else if (itemType === FormType.Armor) {
-        modevents.equipItemPapyrus(item);
+        player.equipItem(item, false, true);
     } else if (itemType === FormType.Light) {
-        modevents.equipItemExPapyrus(item, 2); // 2: left hand
+        player.equipItemEx(item, 2, false, false); // 2: left hand
     } else if (itemType === FormType.Weapon) {
         let hand = (slot === 0) ? 2 : 1;
-        modevents.equipItemExPapyrus(item, hand);
+        player.equipItemEx(item, hand, false, false);
     } else if (itemType === FormType.Ammo) {
-        modevents.equipItemPapyrus(item);
+        player.equipItem(item, false, true);
     } else if (itemType === FormType.Potion) {
-        modevents.equipItemPapyrus(item);
+        player.equipItem(item, false, true);
     } else if (itemType === FormType.Shout) {
-        modevents.equipShoutPapyrus(item);
+        let shout = Shout.from(item);
+        player.equipShout(shout);
     }
     return true;
 }
 
 export function unequip(item: Form | null, slot?: number): boolean {
     if (!item) {
-        if (!slot)
+        if (!slot) {
             return false;
+        }
         return false;
     }
     let itemType = item.getType();
+    let player = Game.getPlayer();
+    if (!player) {
+        return false;
+    }
 
     if (itemType === FormType.Spell) {
-        modevents.unequipSpellPapyrus(item, slot ?? 1);
+        let spell = Spell.from(item);
+        player.unequipSpell(spell, slot ?? 1);
     } else if (itemType === FormType.ScrollItem) {
-        modevents.unequipItemPapyrus(item);
+        player.unequipItem(item, false, true);
     } else if (itemType === FormType.Armor) {
-        modevents.unequipItemPapyrus(item);
+        player.unequipItem(item, false, true);
     } else if (itemType === FormType.Light) {
-        modevents.unequipItemExPapyrus(item, 2); // 2: left hand
+        player.unequipItemEx(item, 2, false); // 2: left hand
     } else if (itemType === FormType.Weapon) {
         let hand = (slot === 0) ? 2 : 1;
-        modevents.unequipItemExPapyrus(item, hand);
+        player.unequipItemEx(item, hand, false);
     } else if (itemType === FormType.Ammo) {
-        modevents.unequipItemPapyrus(item);
+        player.unequipItem(item, false, true);
     } else if (itemType === FormType.Shout) {
-        modevents.unequipShoutPapyrus(item);
+        let shout = Shout.from(item);
+        player.unequipShout(shout);
     }
     return true;
 }
@@ -239,8 +284,9 @@ export interface key {
 
 export function convertKeyValue(paramCode: number): key {
     // Keyboard
-    if (1 <= paramCode && paramCode <= 211)
+    if (1 <= paramCode && paramCode <= 211) {
         return {code: paramCode, device: InputDeviceType.Keyboard};
+    }
     // Mouse
     if (256 <= paramCode && paramCode <= 265) {
         let offset = 256;
@@ -260,11 +306,13 @@ export function convertKeyValue(paramCode: number): key {
             let exp = (paramCode - offset);
             newCode = Math.pow(2, exp);
         }
-        if (paramCode === 280)
+        if (paramCode === 280) {
             newCode = 9;
-        if (paramCode === 281)
+        }
+        if (paramCode === 281) {
             newCode = 10;
+        }
         return {code: newCode, device: InputDeviceType.Gamepad};
     }
-    return {code: -1, device: -1};
+    return {code: -1, device: 0};
 }

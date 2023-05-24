@@ -1,4 +1,4 @@
-import { Ammo, Armor, browser, Game, Form, FormType, MagicEffect, Potion, SlotMask, Spell, Ui, Utility, Weapon, WeaponType } from "@skyrim-platform/skyrim-platform";
+import { Ammo, Armor, browser, Game, Form, FormType, MagicEffect, Potion, SlotMask, Spell, Ui, Utility, Weapon } from "@skyrim-platform/skyrim-platform";
 import { solveForm } from "@skyrim-platform/jcontainers/JDB";
 import * as settings from "./settings";
 import * as utils from "./utilities";
@@ -10,8 +10,9 @@ export function isMenuClosed(): boolean {
 }
 
 export function changeOpacity(element: string, time: number, delay: number, opacity: number) {
-    if (settings.widgetDisableOpacityTransitions)
+    if (settings.widgetDisableOpacityTransitions) {
         time = 0;
+    }
     browser.executeJavaScript(`document.getElementById("${element}").style.transition = "opacity ${time}s";`);
     browser.executeJavaScript(`document.getElementById("${element}").style.transitionDelay = "${delay}s";`);
     browser.executeJavaScript(`document.getElementById("${element}").style.opacity = "${opacity}";`);
@@ -267,11 +268,11 @@ function updateIconPotion(item: Form, iconElement: string) {
         changeSource(iconElement, consts.POTION_RESIST_SHOCK_ICON);
     }
     // Regeneration/restoration potions
-    else if (potionTypeID === consts.REGENERATE_HEALTH_ID || potionTypeID === consts.RESTORE_HEALTH_ID) {
+    else if (potionTypeID === consts.REGENERATE_HEALTH_ID || potionTypeID === consts.RESTORE_HEALTH_ID || potionTypeID === consts.ULTIMATE_HEALING_ID) {
         changeSource(iconElement, consts.POTION_HEALTH_ICON);
-    } else if (potionTypeID === consts.REGENERATE_STAMINA_ID || potionTypeID === consts.RESTORE_STAMINA_ID) {
+    } else if (potionTypeID === consts.REGENERATE_STAMINA_ID || potionTypeID === consts.RESTORE_STAMINA_ID || potionTypeID == consts.ULTIMATE_MAGICKA_ID) {
         changeSource(iconElement, consts.POTION_STAMINA_ICON);
-    } else if (potionTypeID === consts.REGENERATE_MAGICKA_ID || potionTypeID === consts.RESTORE_MAGICKA_ID) {
+    } else if (potionTypeID === consts.REGENERATE_MAGICKA_ID || potionTypeID === consts.RESTORE_MAGICKA_ID || potionTypeID == consts.ULTIMATE_MAGICKA_ID) {
         changeSource(iconElement, consts.POTION_MAGICKA_ICON);
     }
     // Restoration foods
@@ -291,8 +292,9 @@ function updateIconPotion(item: Form, iconElement: string) {
 }
 
 function updateIcon(item: Form | null, iconElement: string) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
+    }
     // Resets secondary icon
     changeSource(`${iconElement}-secondary`, "");
     if (!item) {
@@ -327,9 +329,9 @@ function updateIconOpacity(item: Form | null, iconElement: string) {
     {
         let potion = Potion.from(item);
         let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID() ?? 0;
-        if ((potionType === consts.RESTORE_HEALTH_ID && settings.useOptimalHealthPotion) ||
-            (potionType === consts.RESTORE_MAGICKA_ID && settings.useOptimalMagickaPotion) ||
-            (potionType === consts.RESTORE_STAMINA_ID && settings.useOptimalStaminaPotion))
+        if (((potionType === consts.RESTORE_HEALTH_ID || potionType === consts.ULTIMATE_HEALING_ID) && settings.useOptimalHealthPotion) ||
+            ((potionType === consts.RESTORE_MAGICKA_ID || potionType === consts.ULTIMATE_MAGICKA_ID) && settings.useOptimalMagickaPotion) ||
+            ((potionType === consts.RESTORE_STAMINA_ID || potionType === consts.ULTIMATE_STAMINA_ID) && settings.useOptimalStaminaPotion))
         {
             let potionTypeCount = getTotalPotionTypeCount(potionType);
             if (potionTypeCount > 0) {
@@ -346,8 +348,9 @@ function updateIconOpacity(item: Form | null, iconElement: string) {
 }
 
 export function updateItemCount(countElement: string, iconElement: string, item: Form | null) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
+    }
     updateIconOpacity(item, iconElement);
     let itemType = item?.getType();
     if (item && (itemType === FormType.Ammo || itemType === FormType.Potion)) {
@@ -399,19 +402,39 @@ export function updateEquippedItemWidget(slot: number, item: Form | null) {
 // Used for optimal restoration potions option
 // Could be moved to utils.ts instead
 function getTotalPotionTypeCount(potionTypeID: number): number {
+    let otherTypeID = 0;
+    // Standard potions
+    if (potionTypeID === consts.RESTORE_HEALTH_ID) {
+        otherTypeID = consts.ULTIMATE_HEALING_ID;
+    } else if (potionTypeID === consts.RESTORE_MAGICKA_ID) {
+        otherTypeID = consts.ULTIMATE_MAGICKA_ID;
+    } else if (potionTypeID === consts.RESTORE_STAMINA_ID) {
+        otherTypeID = consts.ULTIMATE_STAMINA_ID;
+    }
+    // Ultimate potions
+    else if (potionTypeID === consts.ULTIMATE_HEALING_ID) {
+        otherTypeID = consts.RESTORE_HEALTH_ID;
+    } else if (potionTypeID === consts.ULTIMATE_MAGICKA_ID) {
+        otherTypeID = consts.RESTORE_MAGICKA_ID;
+    } else if (potionTypeID === consts.ULTIMATE_STAMINA_ID) {
+        otherTypeID = consts.RESTORE_STAMINA_ID;
+    } else {
+        return 0;
+    }
     let player = Game.getPlayer();
     let playerNumItems = player?.getNumItems() ?? 0;
     let potionTypeCount = 0;
     for (let i = 0; i < playerNumItems; i++) {
         let item = player?.getNthForm(i);
         // Item is not a potion
-        if (item?.getType() !== FormType.Potion)
+        if (item?.getType() !== FormType.Potion) {
             continue;
+        }
         let potion = Potion.from(item);
         if (potion) {
             let type = potion?.getNthEffectMagicEffect(0)?.getFormID();
             // Item does not match the type
-            if (potionTypeID !== type)
+            if (type !== potionTypeID && type !== otherTypeID)
                 continue;
             potionTypeCount += player?.getItemCount(potion) ?? 0;
         }
@@ -426,22 +449,24 @@ function getTotalPotionTypeCount(potionTypeID: number): number {
 //   For instance, true would indicate not to update
 export function updateOptimalPotionQuickItemWidget(item: Form | null): boolean {
     updateIconOpacity(item, "quick-item-icon");
+    updateIconOpacity(item, "quick-item-icon-offset-1");
+    updateIconOpacity(item, "quick-item-icon-offset-2");
     let potion = Potion.from(item);
     let potionType = potion?.getNthEffectMagicEffect(0)?.getFormID(); // Health/magicka/stamina restoration potion
     // Cases to update the quick item widget, depending on the potion type
-    if (potionType === consts.RESTORE_HEALTH_ID && settings.useOptimalHealthPotion) {
+    if ((potionType === consts.RESTORE_HEALTH_ID || potionType === consts.ULTIMATE_HEALING_ID) && settings.useOptimalHealthPotion) {
         changeTextContent("quick-item-name", settings.potionOfHealthRestoration);
         let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_HEALTH_ID);
         changeTextContent("quick-item-count", potionTypeCount.toString());
         return true;
     }
-    if (potionType === consts.RESTORE_MAGICKA_ID && settings.useOptimalMagickaPotion) {
+    if ((potionType === consts.RESTORE_MAGICKA_ID || potionType === consts.ULTIMATE_MAGICKA_ID) && settings.useOptimalMagickaPotion) {
         changeTextContent("quick-item-name", settings.potionOfMagickaRestoration);
         let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_MAGICKA_ID);
         changeTextContent("quick-item-count", potionTypeCount.toString());
         return true;
     }
-    if (potionType === consts.RESTORE_STAMINA_ID && settings.useOptimalStaminaPotion) {
+    if ((potionType === consts.RESTORE_STAMINA_ID || potionType === consts.ULTIMATE_STAMINA_ID) && settings.useOptimalStaminaPotion) {
         changeTextContent("quick-item-name", settings.potionOfStaminaRestoration);
         let potionTypeCount = getTotalPotionTypeCount(consts.RESTORE_STAMINA_ID);
         changeTextContent("quick-item-count", potionTypeCount.toString());
@@ -452,8 +477,9 @@ export function updateOptimalPotionQuickItemWidget(item: Form | null): boolean {
 
 // Updates icon and name of the quick item widget, given Form objects (i.e. quick items)
 export function updateQuickItemWidget(item: Form | null, firstNextItem: Form | null, secondNextItem: Form | null) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
+    }
     // Keeps optimal restoration potions and regular Form objects separate
     if (!updateOptimalPotionQuickItemWidget(item)) {
         changeTextContent("quick-item-name", item?.getName() ?? "");
@@ -480,8 +506,9 @@ export function updateQuickItemWidget(item: Form | null, firstNextItem: Form | n
 
 // Updates icons and names of all elements in the pouch widget, given an index
 export function updatePouchWidget(item: Form | null, pouchIndex: number) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
+    }
     let elementPrefix = "";
     if (pouchIndex === 0) {
         elementPrefix = "left-pouch";
@@ -534,56 +561,71 @@ export async function updateAmmoWidget() {
 }
 
 export function flashAnim(element: number) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
-    if (settings.widgetDisableFlashFeedback)
+    }
+    if (settings.widgetDisableFlashFeedback) {
         return;
+    }
     let id = "";
-    if (element === 0)
+    if (element === 0) {
         id = "voice-flash";
-    if (element === 1)
+    }
+    if (element === 1) {
         id = "quick-item-flash";
-    if (element === 2)
+    }
+    if (element === 2) {
         id = "left-hand-flash";
-    if (element === 3)
+    }
+    if (element === 3) {
         id = "right-hand-flash";
+    }
     fadeOut(id, 0.1, 2);
 }
 
 export function flashRedAnim(element: number) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
-    if (settings.widgetDisableFlashFeedback)
+    }
+    if (settings.widgetDisableFlashFeedback) {
         return;
+    }
     let id = "";
-    if (element === 0)
+    if (element === 0) {
         id = "voice-flash-red";
-    if (element === 1)
+    }
+    if (element === 1) {
         id = "quick-item-flash-red";
-    if (element === 2)
+    }
+    if (element === 2) {
         id = "left-hand-flash-red";
-    if (element === 3)
+    }
+    if (element === 3){
         id = "right-hand-flash-red";
+    }
     fadeOut(id, 0.6, 12);
 }
 
 export function shoutFlashAnim(maxShoutTime: number) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
+    }
     fadeIn("voice-icon", maxShoutTime, maxShoutTime * 4);
     fadeOut("voice-flash", 0.2, 4);
     fullHalfFullOpacity("voice-name", maxShoutTime, maxShoutTime);
 }
 
 export function shoutRechargedFlashAnim() {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
+    }
     fadeOut("voice-flash-alt", 0.2*2, 4*2);
 }
 
 export function updateGoldCount(goldCount: number) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
+    }
     changeTextContent("player-gold-count", goldCount.toString());
 }
 
@@ -593,15 +635,19 @@ export function updateGoldCount(goldCount: number) {
 // Plays a count animation of added/removed gold
 // ---------------------------------------------
 export async function goldCountAnimation(goldDelta: number) {
-    if (settings.hideWidgets)
+    if (settings.hideWidgets) {
         return;
-    if (settings.hideGoldWidget)
+    }
+    if (settings.hideGoldWidget) {
         return;
-    if (goldDelta === 0)
+    }
+    if (goldDelta === 0) {
         return;
+    }
     let player = Game.getPlayer();
-    if (!player)
+    if (!player) {
         return;
+    }
     let playerGold = player.getGoldAmount();
     let tempGold = playerGold - goldDelta; // starting amount
     let incrementMult = 2;
@@ -609,8 +655,9 @@ export async function goldCountAnimation(goldDelta: number) {
     // Shows gold delta
     let goldDeltaDuration = 2;
     let deltaSign = "";
-    if (goldDelta > 0)
+    if (goldDelta > 0) {
         deltaSign = "+";
+    }
     changeTextContent("player-gold-delta", `${deltaSign}${goldDelta}`);
     fadeInOut("player-gold-delta", goldDeltaDuration, 4);
     await Utility.wait(1); // delay before playing the counter animation
